@@ -23,6 +23,7 @@ import math
 import random
 import threading
 import tkinter as tk
+from tkinter import ttk
 from datetime import datetime
 from typing import Optional, Dict, Tuple, List, Any
 from PIL import Image, ImageTk
@@ -129,8 +130,8 @@ class WeatherAppGUI:
     def __init__(self, root: tk.Tk):
         self.root = root
         self.root.title("SkyCast - Real-Time Weather Application")
-        self.root.geometry("860x900")
-        self.root.minsize(800, 820)
+        self.root.geometry("860x780")
+        self.root.minsize(780, 560)
 
         # Load preferences
         config = get_config()
@@ -148,6 +149,7 @@ class WeatherAppGUI:
         self.ui_photos: Dict[str, ImageTk.PhotoImage] = {}
         self.is_loading = False
         self.pulse_state = False
+        self.active_tab = "all"  # 'all', 'hourly', 'daily'
 
         # Particle Animation Engine state
         self.particles: List[Dict[str, Any]] = []
@@ -158,6 +160,7 @@ class WeatherAppGUI:
         self._build_header()
         self._build_search_bar()
         self._build_notification_banner()
+        self._build_nav_tabs()
         self._build_main_content()
         self._build_footer()
 
@@ -322,7 +325,15 @@ class WeatherAppGUI:
         # Notification Banner container
         self.banner_frame.configure(bg=t["bg"])
 
-        # Main Content Container
+        # Nav Tabs Bar
+        if hasattr(self, "nav_tabs_frame"):
+            self.nav_tabs_frame.configure(bg=t["bg"])
+            self._update_tab_styles()
+
+        # Main Scrollable Container & Canvas
+        if hasattr(self, "scroll_container"):
+            self.scroll_container.configure(bg=t["bg"])
+            self.scroll_canvas.configure(bg=t["bg"])
         self.content_frame.configure(bg=t["bg"])
 
         # Hero Card & Ambience Canvas
@@ -565,9 +576,177 @@ class WeatherAppGUI:
     def hide_banner(self):
         self.banner_lbl.pack_forget()
 
+    def _build_nav_tabs(self):
+        """Segmented navigation tabs allowing user to view All, Hourly, or 5-Day forecast."""
+        self.nav_tabs_frame = tk.Frame(self.root, bg=self.t["bg"])
+        self.nav_tabs_frame.pack(fill="x", padx=24, pady=(2, 6))
+
+        nav_inner = tk.Frame(self.nav_tabs_frame, bg=self.t["bg"])
+        nav_inner.pack(side="left")
+
+        # Tab: Overview (All)
+        self.tab_all_btn = tk.Button(
+            nav_inner,
+            text=" Overview (All)",
+            font=("Segoe UI", 9, "bold"),
+            relief="flat",
+            bd=0,
+            highlightthickness=1,
+            padx=14,
+            pady=5,
+            cursor="hand2",
+            command=lambda: self.select_tab("all")
+        )
+        self.tab_all_btn.pack(side="left", padx=(0, 6))
+
+        # Tab: Hourly (Next Hours)
+        self.tab_hourly_btn = tk.Button(
+            nav_inner,
+            text=" Hourly Forecast",
+            font=("Segoe UI", 9, "bold"),
+            relief="flat",
+            bd=0,
+            highlightthickness=1,
+            padx=14,
+            pady=5,
+            cursor="hand2",
+            command=lambda: self.select_tab("hourly")
+        )
+        self.tab_hourly_btn.pack(side="left", padx=(0, 6))
+
+        # Tab: 5-Day Outlook (Daily)
+        self.tab_daily_btn = tk.Button(
+            nav_inner,
+            text=" 5-Day Outlook",
+            font=("Segoe UI", 9, "bold"),
+            relief="flat",
+            bd=0,
+            highlightthickness=1,
+            padx=14,
+            pady=5,
+            cursor="hand2",
+            command=lambda: self.select_tab("daily")
+        )
+        self.tab_daily_btn.pack(side="left")
+
+        # Right tip label
+        scroll_tip = tk.Label(
+            self.nav_tabs_frame,
+            text="Tip: Scroll with mouse wheel or select tabs",
+            font=("Segoe UI", 8),
+            fg=self.t["text_subtle"],
+            bg=self.t["bg"]
+        )
+        scroll_tip.pack(side="right", pady=4)
+
+    def select_tab(self, tab_name: str):
+        """Switches visible view sections between All, Hourly, and 5-Day Outlook."""
+        self.active_tab = tab_name
+        self._update_tab_styles()
+
+        if not hasattr(self, "hero_card") or not hasattr(self, "scroll_canvas"):
+            return
+
+        if tab_name == "all":
+            self.hero_card.pack(fill="x", pady=(0, 10))
+            self.hourly_section.pack(fill="x", pady=(4, 8))
+            self.daily_section.pack(fill="both", expand=True, pady=(4, 10))
+            self.scroll_canvas.yview_moveto(0)
+        elif tab_name == "hourly":
+            self.hero_card.pack(fill="x", pady=(0, 10))
+            self.hourly_section.pack(fill="x", pady=(4, 8))
+            self.daily_section.pack_forget()
+            self.scroll_canvas.yview_moveto(0)
+        elif tab_name == "daily":
+            self.hero_card.pack(fill="x", pady=(0, 10))
+            self.hourly_section.pack_forget()
+            self.daily_section.pack(fill="both", expand=True, pady=(4, 10))
+            self.scroll_canvas.yview_moveto(0)
+
+        self.root.update_idletasks()
+        self.scroll_canvas.configure(scrollregion=self.scroll_canvas.bbox("all"))
+
+    def _update_tab_styles(self):
+        """Updates active tab highlight colors according to active theme."""
+        t = self.t
+        tabs = [
+            ("all", self.tab_all_btn),
+            ("hourly", self.tab_hourly_btn),
+            ("daily", self.tab_daily_btn)
+        ]
+        for name, btn in tabs:
+            if self.active_tab == name:
+                btn.configure(
+                    bg=t["accent"],
+                    fg=t["accent_text"],
+                    highlightbackground=t["accent"],
+                    activebackground=t["accent_hover"],
+                    activeforeground=t["accent_text"]
+                )
+            else:
+                btn.configure(
+                    bg=t["btn_bg"],
+                    fg=t["btn_fg"],
+                    highlightbackground=t["btn_border"],
+                    activebackground=t["btn_hover"],
+                    activeforeground=t["btn_fg"]
+                )
+
     def _build_main_content(self):
-        self.content_frame = tk.Frame(self.root, bg=self.t["bg"])
-        self.content_frame.pack(fill="both", expand=True, padx=24, pady=4)
+        """Builds scrollable main canvas with vertical scrollbar and mouse-wheel support."""
+        self.scroll_container = tk.Frame(self.root, bg=self.t["bg"])
+        self.scroll_container.pack(fill="both", expand=True, padx=(24, 8), pady=2)
+
+        # Scroll Canvas
+        self.scroll_canvas = tk.Canvas(
+            self.scroll_container,
+            bg=self.t["bg"],
+            bd=0,
+            highlightthickness=0
+        )
+
+        # Scrollbar
+        self.scrollbar = ttk.Scrollbar(
+            self.scroll_container,
+            orient="vertical",
+            command=self.scroll_canvas.yview
+        )
+        self.scroll_canvas.configure(yscrollcommand=self.scrollbar.set)
+
+        self.scrollbar.pack(side="right", fill="y", padx=(2, 0))
+        self.scroll_canvas.pack(side="left", fill="both", expand=True)
+
+        # Inner content frame placed on canvas
+        self.content_frame = tk.Frame(self.scroll_canvas, bg=self.t["bg"])
+        self.canvas_window = self.scroll_canvas.create_window(
+            (0, 0), window=self.content_frame, anchor="nw"
+        )
+
+        # Dynamic resizing bindings
+        def on_frame_configure(event):
+            self.scroll_canvas.configure(scrollregion=self.scroll_canvas.bbox("all"))
+
+        def on_canvas_configure(event):
+            # Keep content_frame width matching canvas width minus margin
+            self.scroll_canvas.itemconfig(self.canvas_window, width=event.width)
+
+        self.content_frame.bind("<Configure>", on_frame_configure)
+        self.scroll_canvas.bind("<Configure>", on_canvas_configure)
+
+        # Mouse wheel scrolling bindings (Windows + Linux)
+        def _on_mousewheel(event):
+            if not self.root.winfo_exists():
+                return
+            if event.delta:
+                self.scroll_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+            elif event.num == 4:
+                self.scroll_canvas.yview_scroll(-1, "units")
+            elif event.num == 5:
+                self.scroll_canvas.yview_scroll(1, "units")
+
+        self.root.bind_all("<MouseWheel>", _on_mousewheel)
+        self.root.bind_all("<Button-4>", _on_mousewheel)
+        self.root.bind_all("<Button-5>", _on_mousewheel)
 
         # 1. Current Weather Hero Card Container
         self.hero_card = tk.Frame(
@@ -581,7 +760,7 @@ class WeatherAppGUI:
         # Dynamic Weather Ambience Header Canvas (Animated Particles matching Live Condition)
         self.ambience_canvas = tk.Canvas(
             self.hero_card,
-            height=40,
+            height=36,
             bg=self.t["ambience_bg"],
             bd=0,
             highlightthickness=0
@@ -589,7 +768,7 @@ class WeatherAppGUI:
         self.ambience_canvas.pack(fill="x")
 
         self.hero_inner = tk.Frame(self.hero_card, bg=self.t["panel_bg"])
-        self.hero_inner.pack(fill="x", padx=20, pady=(10, 16))
+        self.hero_inner.pack(fill="x", padx=20, pady=(8, 14))
 
         # Top section: Location & Badge & Date
         self.hero_header = tk.Frame(self.hero_inner, bg=self.t["panel_bg"])
@@ -627,7 +806,7 @@ class WeatherAppGUI:
 
         # Middle section: Weather Icon + Large Temperature + Condition text
         self.temp_row = tk.Frame(self.hero_inner, bg=self.t["panel_bg"])
-        self.temp_row.pack(fill="x", pady=8)
+        self.temp_row.pack(fill="x", pady=6)
 
         self.icon_lbl = tk.Label(self.temp_row, bg=self.t["panel_bg"])
         self.icon_lbl.pack(side="left", padx=(0, 16))
@@ -655,7 +834,7 @@ class WeatherAppGUI:
 
         # Bottom section: 4 Metric Cards (Feels Like, Humidity, Wind, Pressure)
         self.metrics_grid = tk.Frame(self.hero_inner, bg=self.t["panel_bg"])
-        self.metrics_grid.pack(fill="x", pady=(10, 2))
+        self.metrics_grid.pack(fill="x", pady=(8, 2))
         self.metrics_grid.columnconfigure(0, weight=1)
         self.metrics_grid.columnconfigure(1, weight=1)
         self.metrics_grid.columnconfigure(2, weight=1)
@@ -684,7 +863,7 @@ class WeatherAppGUI:
 
         # 3. 5-Day Forecast Section
         self.daily_section = tk.Frame(self.content_frame, bg=self.t["bg"])
-        self.daily_section.pack(fill="both", expand=True)
+        self.daily_section.pack(fill="both", expand=True, pady=(4, 10))
 
         self.daily_title = tk.Label(
             self.daily_section,
@@ -1029,9 +1208,8 @@ class WeatherAppGUI:
             except CityNotFoundError as e:
                 self.root.after(0, lambda: self._on_fetch_error(str(e)))
             except InvalidApiKeyError as e:
-                self.root.after(0, lambda: self._on_fetch_error(
-                    f"{str(e)} Click 'API Key' in the header to enter your free OpenWeatherMap key."
-                ))
+                err_msg = str(e) if (str(e) and str(e) != "None") else "API Key Not Active Yet: OpenWeatherMap keys take 10 to 60 minutes after signup to activate."
+                self.root.after(0, lambda: self._on_fetch_error(err_msg))
             except NetworkError as e:
                 self.root.after(0, lambda: self._on_fetch_error(f"Network Error: {str(e)}"))
             except RateLimitError as e:
@@ -1286,9 +1464,10 @@ class WeatherAppGUI:
         info_text = (
             "To get live real-time weather and forecasts:\n"
             "1. Register free at: https://openweathermap.org/api\n"
-            "2. Copy your 32-character API key from your profile.\n"
-            "3. Paste it below and click 'Save Key'.\n"
-            "(If left blank, the app will run in Demo Preview mode)."
+            "2. Confirm your email address (check your inbox/spam).\n"
+            "3. Copy your 32-character API key and paste below.\n\n"
+            "IMPORTANT: Brand new OpenWeatherMap keys take 10 to 60 minutes\n"
+            "after signup to activate on their servers! (Error 401 until active)."
         )
         info_lbl = tk.Label(
             inner,
@@ -1298,7 +1477,7 @@ class WeatherAppGUI:
             bg=t["bg"],
             justify="left"
         )
-        info_lbl.pack(anchor="w", pady=(10, 15))
+        info_lbl.pack(anchor="w", pady=(8, 12))
 
         key_lbl = tk.Label(inner, text="API Key:", font=("Segoe UI", 9, "bold"), fg=t["text_main"], bg=t["bg"])
         key_lbl.pack(anchor="w")
@@ -1315,18 +1494,63 @@ class WeatherAppGUI:
             highlightthickness=1,
             highlightbackground=t["panel_border"]
         )
-        key_entry.pack(fill="x", pady=(4, 15))
+        key_entry.pack(fill="x", pady=(4, 8))
         key_entry.insert(0, current_key)
 
+        # Inline status label for testing key
+        test_status_lbl = tk.Label(
+            inner,
+            text="",
+            font=("Segoe UI", 8, "bold"),
+            fg=t["accent"],
+            bg=t["bg"],
+            wraplength=480,
+            justify="left"
+        )
+        test_status_lbl.pack(anchor="w", pady=(0, 8))
+
         btn_box = tk.Frame(inner, bg=t["bg"])
-        btn_box.pack(fill="x", pady=10)
+        btn_box.pack(fill="x", pady=6)
+
+        def test_key_online():
+            candidate_key = key_entry.get().strip()
+            if not candidate_key:
+                test_status_lbl.config(text="Please enter an API key above to test.", fg=t["error_text"])
+                return
+
+            test_status_lbl.config(text="Contacting OpenWeatherMap servers...", fg=t["accent"])
+
+            def worker():
+                import requests
+                try:
+                    r = requests.get(
+                        "https://api.openweathermap.org/data/2.5/weather",
+                        params={"q": "London", "appid": candidate_key},
+                        timeout=5
+                    )
+                    if r.status_code == 200:
+                        msg = "[ACTIVE] Key is verified and working! You can click 'Save Key'."
+                        color = t["badge_live_fg"]
+                    elif r.status_code == 401:
+                        msg = "[NOT ACTIVE YET] OpenWeatherMap returned 401.\nNew keys take 10-60 mins to activate. Also ensure you verified your email."
+                        color = t["badge_demo_fg"]
+                    else:
+                        msg = f"Server response: HTTP {r.status_code}"
+                        color = t["error_text"]
+                except Exception as ex:
+                    msg = f"Network test failed: {ex}"
+                    color = t["error_text"]
+
+                modal.after(0, lambda: test_status_lbl.config(text=msg, fg=color))
+
+            threading.Thread(target=worker, daemon=True).start()
 
         def save_and_close():
             new_key = key_entry.get().strip()
             set_api_key(new_key)
             modal.destroy()
             self.show_banner(
-                "API key updated successfully. Refreshing weather..." if new_key else "API key cleared. Reverted to Demo mode.",
+                "API key updated. Fetching weather..." if new_key else "API key cleared. Reverted to Demo mode.",
                 is_info=True
             )
             if self.city_entry.get().strip():
@@ -1348,6 +1572,24 @@ class WeatherAppGUI:
         )
         save_btn.pack(side="left", padx=(0, 8))
         self._bind_hover_effect(save_btn, t["accent"], t["accent_hover"])
+
+        test_btn = tk.Button(
+            btn_box,
+            text="Test Key",
+            font=("Segoe UI", 9, "bold"),
+            bg=t["btn_bg"],
+            fg=t["btn_fg"],
+            activebackground=t["btn_hover"],
+            relief="flat",
+            bd=0,
+            highlightthickness=1,
+            padx=12,
+            pady=6,
+            cursor="hand2",
+            command=test_key_online
+        )
+        test_btn.pack(side="left", padx=(0, 8))
+        self._bind_hover_effect(test_btn, t["btn_bg"], t["btn_hover"], t["btn_border"], t["btn_hover_border"])
 
         cancel_btn = tk.Button(
             btn_box,
