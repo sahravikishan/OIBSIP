@@ -246,7 +246,7 @@ def _request_openweathermap(url: str, params: Dict[str, Any], timeout: int = 8) 
     # Error handling based on HTTP status codes
     if response.status_code == 401:
         raise InvalidApiKeyError(
-            "Invalid API Key. Please verify your OpenWeatherMap API key in Settings."
+            "API Key Not Active Yet: OpenWeatherMap newly created keys take 10 to 60 minutes after registration to activate. Please also verify that you clicked the confirmation link in your email."
         )
     elif response.status_code == 404:
         raise CityNotFoundError(
