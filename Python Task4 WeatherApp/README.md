@@ -23,11 +23,16 @@ A comprehensive Python Weather Application featuring both a **Beginner Tier** Co
 - [x] **Input Validation**: Rejects empty strings, whitespace, or excessively short queries with clear guidance.
 
 ### Advanced Tier (GUI)
-- [x] **Modern Responsive GUI**: Custom-styled dark slate theme built using Python `tkinter` and `ttk`.
-- [x] **Weather Icons**: Fetches and renders official OpenWeatherMap weather icons with local disk caching and offline vector fallbacks.
+- [x] **🎨 Elevated Dark & Light Theme**: Deep Obsidian & Neon Cyan dark theme with modern glassmorphism borders and clean daylight mode; preferences persist to `config.json`.
+- [x] **✨ Dynamic Weather Ambience Engine**: Real-time canvas particle animations matching live conditions (Rain, Snow, Drifting Clouds, Radiant Clear Sky).
+- [x] **⏱️ Live Digital Clock & Radar Pulse**: Live ticking real-time clock and animated pulsing status dot for active connection monitoring.
+- [x] **💫 Interactive Hover Elevation & Glow**: Dynamic hover highlights on all buttons, metric cards, hourly cards, and daily forecast rows.
+- [x] **📐 Custom Vector-Quality Graphical Icons (No Emojis)**: High-resolution graphical icons rendered with Pillow (`icon_assets.py`) for search, location pins, settings gear, sun/moon themes, and weather metrics; zero emojis used.
+- [x] **Weather Condition Icons**: Fetches and renders official OpenWeatherMap weather icons with local disk caching and offline vector fallbacks.
 - [x] **Hourly Forecast Panel**: Shows forecast cards for the next 6–9 hours with timestamps, weather icons, conditions, and temperatures.
 - [x] **Daily Forecast Panel**: Aggregates a 5-day forecast displaying day names, dates, weather condition icons, and daily min/max temperatures.
 - [x] **Unit Toggle (°C / °F)**: Instant toggle button in the header; recalculates and updates the entire UI without refetching from the network.
+- [x] **Status Badges**: Polished glowing pill badges for `LIVE DATA` and `DEMO PREVIEW` with breathing radar dots.
 - [x] **📍 IP-Based Auto-Detection**: Automatically detects the user's city via the `ipinfo.io` (or fallback `ip-api.com`) free API.
 - [x] **In-GUI Error Notifications**: Visually distinct inline error banners inside the GUI (no crashes or terminal popups).
 - [x] **Non-Blocking Architecture**: Background threading (`threading.Thread`) ensures the GUI stays smooth and responsive during API calls.

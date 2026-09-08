@@ -14,6 +14,7 @@ ENV_KEY_NAME = "OPENWEATHER_API_KEY"
 DEFAULT_CONFIG: Dict[str, Any] = {
     "api_key": "",
     "default_unit": "C",  # 'C' for Celsius, 'F' for Fahrenheit
+    "theme": "dark",      # 'dark' or 'light'
     "last_city": "London",
     "use_demo_if_no_key": True
 }

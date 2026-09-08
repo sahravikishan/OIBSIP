@@ -98,7 +98,7 @@ def run_interactive():
         print("       To use live data: register at openweathermap.org")
         print("       and run: python weather_cli.py --set-key YOUR_KEY\n")
     else:
-        print("[✓] OpenWeatherMap API key loaded.\n")
+        print("[OK] OpenWeatherMap API key loaded.\n")
 
     print("Type a city name (e.g. 'London', 'Tokyo', 'Paris') or ZIP code.")
     print("Type 'q' or 'exit' to quit.\n")
@@ -132,7 +132,7 @@ def main(argv=None):
     if args.set_key:
         key = args.set_key.strip()
         set_api_key(key)
-        print(f"[✓] OpenWeatherMap API key successfully saved to config.json ({key[:4]}...{key[-4:] if len(key) > 8 else ''})")
+        print(f"[OK] OpenWeatherMap API key successfully saved to config.json ({key[:4]}...{key[-4:] if len(key) > 8 else ''})")
         return
 
     if args.view_key:
