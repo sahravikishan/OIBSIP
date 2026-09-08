@@ -1,0 +1,16 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Local environment & API secrets
+.env
+config.json
+
+# Local icon cache
+.cache/
+
+# Virtual environments
+venv/
+env/
+.venv/
