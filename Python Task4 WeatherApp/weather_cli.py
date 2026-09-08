@@ -100,7 +100,8 @@ def run_interactive():
     else:
         print("[OK] OpenWeatherMap API key loaded.\n")
 
-    print("Type a city name (e.g. 'London', 'Tokyo', 'Paris') or ZIP code.")
+    print("Type a city name (e.g. 'Pune', 'Bangalore', 'Delhi', 'Mumbai')")
+    print("or an international city (e.g. 'London', 'New York', 'Tokyo') or ZIP code.")
     print("Type 'q' or 'exit' to quit.\n")
 
     while True:

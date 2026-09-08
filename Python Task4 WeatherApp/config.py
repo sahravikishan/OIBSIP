@@ -15,7 +15,7 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     "api_key": "",
     "default_unit": "C",  # 'C' for Celsius, 'F' for Fahrenheit
     "theme": "dark",      # 'dark' or 'light'
-    "last_city": "London",
+    "last_city": "Pune",
     "use_demo_if_no_key": True
 }
 

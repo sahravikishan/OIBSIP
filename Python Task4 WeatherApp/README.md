@@ -7,7 +7,7 @@ A comprehensive Python Weather Application featuring both a **Beginner Tier** Co
 ## 🌟 Feature Checklist
 
 ### Beginner Tier (CLI)
-- [x] **Location Query**: Interactive prompt for city name or ZIP code, plus command-line argument support (`python weather_cli.py "London"`).
+- [x] **Location Query**: Interactive prompt for city name or ZIP code, plus command-line argument support (`python weather_cli.py "Pune"`).
 - [x] **API Integration**: Real-time HTTP GET to OpenWeatherMap API and structured JSON parsing.
 - [x] **Weather Metrics Display**:
   - Current Temperature in both **Celsius (°C)** and **Fahrenheit (°F)**
@@ -118,7 +118,7 @@ python weather_gui.py
 ```
 
 #### GUI Features Walkthrough:
-1. **Search**: Enter any city or ZIP code (e.g., `New York`, `Tokyo`, `London`, `90210`) and press **Enter** or click **Get Weather**.
+1. **Search**: Enter any city or ZIP code (e.g., `Pune`, `Bangalore`, `Delhi`, `London`, `Tokyo`) and press **Enter** or click **Get Weather**.
 2. **Auto Detect**: Click **📍 Auto Detect** to determine your current city via your IP address.
 3. **Unit Switcher**: Click the **Unit: °C / °F** button in the top right to instantly swap all temperature values.
 4. **Settings**: Click **⚙ API Key** to configure or view your API key.
@@ -138,32 +138,32 @@ python weather_cli.py
 
 Or query a city directly in one command:
 ```bash
-python main.py --cli Tokyo
+python main.py --cli Pune
 # or
-python weather_cli.py "San Francisco"
+python weather_cli.py "Bangalore"
 ```
 
 #### Example CLI Output:
 ```text
 ==================================================
-  WEATHER REPORT: TOKYO, JP
+  WEATHER REPORT: PUNE, IN
 ==================================================
-  Condition    : Rain (light rain)
-  Temperature  : 24.5°C  |  76.1°F
-  Feels Like   : 24.0°C  |  75.2°F
-  Humidity     : 82%
-  Wind Speed   : 5.1 m/s  (11.4 mph)
-  Pressure     : 1009 hPa
-  Report Time  : Monday, 07 Sep 2026 17:04 UTC
+  Condition    : Clouds (scattered clouds)
+  Temperature  : 28.3°C  |  82.9°F
+  Feels Like   : 31.0°C  |  87.8°F
+  Humidity     : 70%
+  Wind Speed   : 3.6 m/s  (8.1 mph)
+  Pressure     : 1008 hPa
+  Report Time  : Monday, 08 Sep 2026 10:30 UTC
 ==================================================
 
   5-Day Outlook:
   --------------------------------------------
-  Today    +0d      Rain         20.5°C / 27.5°C  (68.9°F / 81.5°F)
-  Tomorrow +1d      Rain         21.0°C / 28.0°C  (69.8°F / 82.4°F)
-  Wed      +2d      Rain         21.5°C / 28.5°C  (70.7°F / 83.3°F)
-  Thu      +3d      Rain         22.0°C / 29.0°C  (71.6°F / 84.2°F)
-  Fri      +4d      Rain         22.5°C / 29.5°C  (72.5°F / 85.1°F)
+  Today    +0d      Clouds       24.0°C / 30.5°C  (75.2°F / 86.9°F)
+  Tomorrow +1d      Rain         23.5°C / 29.0°C  (74.3°F / 84.2°F)
+  Wed      +2d      Rain         23.0°C / 28.5°C  (73.4°F / 83.3°F)
+  Thu      +3d      Clouds       24.0°C / 31.0°C  (75.2°F / 87.8°F)
+  Fri      +4d      Clear        24.5°C / 32.0°C  (76.1°F / 89.6°F)
   --------------------------------------------
 ```
 
