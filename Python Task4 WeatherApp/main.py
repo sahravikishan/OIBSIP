@@ -3,7 +3,7 @@ Main Entry Point for the Real-Time Weather Application.
 Allows running either the Advanced GUI (default) or Beginner CLI via `--cli`.
 """
 
-import sys
+
 import argparse
 
 

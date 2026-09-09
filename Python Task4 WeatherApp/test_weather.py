@@ -23,7 +23,6 @@ from weather_service import (
     NetworkError,
     RateLimitError
 )
-import config
 
 
 class TestWeatherConversions(unittest.TestCase):

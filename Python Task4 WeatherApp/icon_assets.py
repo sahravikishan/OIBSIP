@@ -4,7 +4,8 @@ Generates anti-aliased, high-resolution vector-like graphical icons using Pillow
 Eliminates the need for system emojis and ensures pixel-perfect, theme-adaptive icons.
 """
 
-from typing import Tuple, Dict
+import math
+from typing import Tuple
 from PIL import Image, ImageDraw
 
 
@@ -62,7 +63,6 @@ def create_icon(name: str, hex_color: str, size: Tuple[int, int] = (24, 24)) -> 
         draw.ellipse([cx - outer_r, cy - outer_r, cx + outer_r, cy + outer_r], outline=color, width=int(scale * 3))
         draw.ellipse([cx - inner_r, cy - inner_r, cx + inner_r, cy + inner_r], fill=color)
         # Teeth lines
-        import math
         num_teeth = 8
         tooth_len = int(scale * 4.5)
         for i in range(num_teeth):
@@ -78,7 +78,6 @@ def create_icon(name: str, hex_color: str, size: Tuple[int, int] = (24, 24)) -> 
         cx, cy = int(w * 0.5), int(h * 0.5)
         r = int(w * 0.22)
         draw.ellipse([cx - r, cy - r, cx + r, cy + r], fill=color)
-        import math
         for i in range(8):
             angle = i * (math.pi / 4)
             x1 = cx + (r + int(scale * 2.5)) * math.cos(angle)
@@ -192,17 +191,17 @@ def create_icon(name: str, hex_color: str, size: Tuple[int, int] = (24, 24)) -> 
         draw.line([right_x - int(scale * 5), top_y - int(scale * 4), right_x - int(scale * 5), top_y + int(scale * 3)], fill=color, width=ring_w)
 
     elif name == "logo":
-        # App logo: Cloud with stylized sun
-        cx, cy = int(w * 0.5), int(h * 0.5)
-        # Sun behind cloud
+        # App logo: Vibrant sun rising behind a clean rounded cloud
         sun_color = (251, 191, 36, 255)  # Amber gold
-        draw.ellipse([int(w * 0.42), int(h * 0.18), int(w * 0.78), int(h * 0.54)], fill=sun_color)
-        # Cloud in front
+        draw.ellipse([int(w * 0.44), int(h * 0.16), int(w * 0.80), int(h * 0.52)], fill=sun_color)
+
+        # Cloud in front: 3 overlapping circles + rounded base
         cloud_color = color
-        draw.ellipse([int(w * 0.18), int(h * 0.42), int(w * 0.52), int(h * 0.76)], fill=cloud_color)
-        draw.ellipse([int(w * 0.38), int(h * 0.34), int(w * 0.74), int(h * 0.70)], fill=cloud_color)
-        draw.ellipse([int(w * 0.56), int(h * 0.46), int(w * 0.84), int(h * 0.76)], fill=cloud_color)
-        draw.rectangle([int(w * 0.32), int(h * 0.54), int(w * 0.72), int(h * 0.76)], fill=cloud_color)
+        draw.ellipse([int(w * 0.16), int(h * 0.40), int(w * 0.52), int(h * 0.76)], fill=cloud_color)
+        draw.ellipse([int(w * 0.36), int(h * 0.30), int(w * 0.74), int(h * 0.68)], fill=cloud_color)
+        draw.ellipse([int(w * 0.54), int(h * 0.42), int(w * 0.86), int(h * 0.74)], fill=cloud_color)
+        # Rounded bottom base
+        draw.rounded_rectangle([int(w * 0.20), int(h * 0.52), int(w * 0.82), int(h * 0.76)], radius=int(scale * 3), fill=cloud_color)
 
     elif name == "dot":
         # Status dot

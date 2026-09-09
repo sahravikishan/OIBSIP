@@ -6,7 +6,6 @@ IP-based auto-location detection, unit conversions, and icon management.
 
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-import os
 from pathlib import Path
 from typing import List, Optional, Tuple, Dict, Any
 import requests
@@ -19,13 +18,12 @@ CURRENT_WEATHER_URL = "https://api.openweathermap.org/data/2.5/weather"
 FORECAST_URL = "https://api.openweathermap.org/data/2.5/forecast"
 ICON_BASE_URL = "https://openweathermap.org/img/wn/{icon}@2x.png"
 IPINFO_URL = "https://ipinfo.io/json"
-IP_API_URL = "http://ip-api.com/json"
+IP_API_URL = "https://ip-api.com/json"
 
 CACHE_DIR = Path(__file__).resolve().parent / ".cache" / "icons"
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
 
-# --- Custom Exceptions ---
 
 class WeatherAppError(Exception):
     """Base exception for Weather App."""
@@ -57,7 +55,7 @@ class RateLimitError(WeatherAppError):
     pass
 
 
-# --- Unit Conversion Helpers ---
+
 
 def c_to_f(celsius: float) -> float:
     """Convert Celsius to Fahrenheit."""
@@ -74,7 +72,6 @@ def mps_to_mph(mps: float) -> float:
     return round(mps * 2.23694, 1)
 
 
-# --- Data Models ---
 
 @dataclass
 class CurrentWeather:
@@ -131,7 +128,6 @@ class WeatherData:
     daily: List[DailyForecastItem] = field(default_factory=list)
 
 
-# --- Demo Data Generator (For Testing or Key-less Preview) ---
 
 def get_demo_weather(query: str) -> WeatherData:
     """Provides realistic offline mock weather data for preview/demonstration."""
@@ -214,7 +210,6 @@ def get_demo_weather(query: str) -> WeatherData:
     return WeatherData(current=curr, hourly=hourly, daily=daily)
 
 
-# --- API Validation & Call Wrappers ---
 
 def validate_location_query(query: str) -> str:
     """Validates and trims user query."""
@@ -414,7 +409,6 @@ def fetch_weather_data(query: str, api_key: Optional[str] = None) -> WeatherData
     return WeatherData(current=current_weather, hourly=hourly_items, daily=daily_items)
 
 
-# --- IP-based Location Auto-Detection ---
 
 def detect_user_location() -> str:
     """
@@ -445,7 +439,6 @@ def detect_user_location() -> str:
     raise NetworkError("Could not automatically detect location. Please type your city name manually.")
 
 
-# --- Weather Icon Management ---
 
 def create_fallback_icon(condition: str, size: Tuple[int, int] = (64, 64)) -> Image.Image:
     """Generates a clean colored weather symbol if icon download is unavailable."""

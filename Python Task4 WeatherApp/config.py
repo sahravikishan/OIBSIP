@@ -6,7 +6,7 @@ Handles loading and saving API keys and user preferences (e.g. default temperatu
 import json
 import os
 from pathlib import Path
-from typing import Optional, Dict, Any
+from typing import Dict, Any
 
 CONFIG_FILE = Path(__file__).resolve().parent / "config.json"
 ENV_KEY_NAME = "OPENWEATHER_API_KEY"

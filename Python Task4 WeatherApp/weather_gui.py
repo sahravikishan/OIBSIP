@@ -1,22 +1,7 @@
 """
-Weather GUI - Advanced Tier Graphical User Interface.
-Built with Tkinter and Pillow.
-
-Features:
-- Search by city name or ZIP code
-- Automatic location detection via IP (ipinfo.io / ip-api)
-- Unit toggle: Celsius (°C) and Fahrenheit (°F) with instant re-render
-- Theme toggle: Enhanced Dark Mode (Obsidian & Neon Glow) & Light Mode (Clean Azure)
-- Dynamic Weather Ambience: Canvas particle animations matching live conditions (Rain, Snow, Clouds, Clear)
-- Real-Time Digital Clock: Live ticking clock with UTC and local time updates
-- Live Radar Pulsing Badge: Animated breathing status indicators (LIVE DATA vs DEMO PREVIEW)
-- Interactive Hover Glow: Elevated interactive animations on all cards, forecast rows, and buttons
-- Custom vector-quality graphical icons for all UI controls (no emojis used)
-- Hourly forecast panel (next 6-9 hours) with timestamps and temperature cards
-- 5-Day daily forecast panel with min/max temperature range bars and condition badges
-- In-GUI error and status banners (no terminal crashes)
-- Settings modal for saving and managing OpenWeatherMap API key
-- Non-blocking background threads for snappy, responsive UI
+Weather GUI module - Tkinter-based graphical interface for the SkyCast weather app.
+Provides city search, current conditions, hourly and 5-day forecast display,
+dark/light theme switching, and animated weather background effects.
 """
 
 import math
@@ -26,6 +11,7 @@ import tkinter as tk
 from tkinter import ttk
 from datetime import datetime
 from typing import Optional, Dict, Tuple, List, Any
+import requests
 from PIL import Image, ImageTk
 
 from config import get_api_key, set_api_key, get_config, save_config
@@ -43,40 +29,39 @@ from weather_service import (
     WeatherAppError
 )
 
-# --- Dual Theme Palettes with Elevated Dark Mode ---
 THEMES: Dict[str, Dict[str, str]] = {
     "dark": {
         "name": "dark",
         "toggle_label": "Light",
-        "bg": "#090D16",            # Deep Obsidian Navy
-        "panel_bg": "#131C2E",      # Elevated Slate Surface
-        "panel_border": "#23334D",  # Subtle Border
-        "panel_hover_border": "#38BDF8", # Glowing Cyan Accent on Hover
-        "card_bg": "#101826",       # Inner Card Background
-        "card_hover": "#1C2A40",    # Card Hover Surface
-        "card_surface": "#162035",  # Hourly / Daily Card Surfaces
-        "accent": "#38BDF8",        # Vivid Neon Sky Blue
-        "accent_hover": "#7DD3FC",  # Luminous Sky
-        "accent_text": "#090D16",   # Deep Contrast Text on Accent
-        "text_main": "#F8FAFC",     # Crisp White Text
-        "text_muted": "#94A3B8",    # Muted Slate Text
-        "text_subtle": "#64748B",   # Secondary Label Text
-        "input_bg": "#0B111E",      # Deep Input Field
+        "bg": "#090D16",
+        "panel_bg": "#131C2E",
+        "panel_border": "#23334D",
+        "panel_hover_border": "#38BDF8",
+        "card_bg": "#101826",
+        "card_hover": "#1C2A40",
+        "card_surface": "#162035",
+        "accent": "#38BDF8",
+        "accent_hover": "#7DD3FC",
+        "accent_text": "#090D16",
+        "text_main": "#F8FAFC",
+        "text_muted": "#94A3B8",
+        "text_subtle": "#64748B",
+        "input_bg": "#0B111E",
         "input_fg": "#F8FAFC",
-        "btn_bg": "#1A263B",        # Polished Dark Button
+        "btn_bg": "#1A263B",
         "btn_fg": "#F1F5F9",
         "btn_border": "#2D405E",
-        "btn_hover": "#253754",     # Button Hover Glow
+        "btn_hover": "#253754",
         "btn_hover_border": "#38BDF8",
-        "badge_demo_bg": "#451A03", # Translucent Deep Amber
+        "badge_demo_bg": "#451A03",
         "badge_demo_border": "#D97706",
-        "badge_demo_fg": "#FDE68A", # Warm Gold
-        "badge_live_bg": "#042F2E", # Translucent Deep Emerald
+        "badge_demo_fg": "#FDE68A",
+        "badge_live_bg": "#042F2E",
         "badge_live_border": "#059669",
-        "badge_live_fg": "#6EE7B7", # Luminous Mint
-        "metric_box_bg": "#121A29", # Metric Card Surface
+        "badge_live_fg": "#6EE7B7",
+        "metric_box_bg": "#121A29",
         "metric_hover_bg": "#1A263B",
-        "ambience_bg": "#0C1422",   # Particle Canvas Background
+        "ambience_bg": "#0C1422",
         "error_bg": "#7F1D1D",
         "error_text": "#FCA5A5",
         "info_bg": "#131C2E",
@@ -87,18 +72,18 @@ THEMES: Dict[str, Dict[str, str]] = {
     "light": {
         "name": "light",
         "toggle_label": "Dark",
-        "bg": "#F8FAFC",            # Clean Soft Slate
-        "panel_bg": "#FFFFFF",      # Pure White Container
-        "panel_border": "#E2E8F0",  # Delicate Border
+        "bg": "#F8FAFC",
+        "panel_bg": "#FFFFFF",
+        "panel_border": "#E2E8F0",
         "panel_hover_border": "#0284C7",
-        "card_bg": "#F1F5F9",       # Soft Off-White Card Surface
+        "card_bg": "#F1F5F9",
         "card_hover": "#E2E8F0",
-        "card_surface": "#FFFFFF",  # Hourly / Daily Card Surfaces
-        "accent": "#0284C7",        # Ocean Azure
+        "card_surface": "#FFFFFF",
+        "accent": "#0284C7",
         "accent_hover": "#0369A1",
-        "accent_text": "#FFFFFF",   # Crisp White on Accent
-        "text_main": "#0F172A",     # Deep Slate Navy
-        "text_muted": "#64748B",    # Slate 500
+        "accent_text": "#FFFFFF",
+        "text_main": "#0F172A",
+        "text_muted": "#64748B",
         "text_subtle": "#94A3B8",
         "input_bg": "#F8FAFC",
         "input_fg": "#0F172A",
@@ -184,7 +169,6 @@ class WeatherAppGUI:
         self.anim_running = False
         self.root.destroy()
 
-    # --- UI Graphical Icon Manager ---
 
     def get_ui_photo(self, name: str, color_hex: str, size: Tuple[int, int] = (20, 20)) -> ImageTk.PhotoImage:
         """Returns or creates a cached PhotoImage for a graphical icon with exact theme color."""
@@ -194,7 +178,6 @@ class WeatherAppGUI:
             self.ui_photos[cache_key] = ImageTk.PhotoImage(pil_img)
         return self.ui_photos[cache_key]
 
-    # --- Interactive Hover Glow Helper ---
 
     def _bind_hover_effect(self, widget, default_bg, hover_bg, default_border=None, hover_border=None):
         """Binds responsive hover glow and elevation effect to any interactive widget."""
@@ -219,7 +202,6 @@ class WeatherAppGUI:
         widget.bind("<Enter>", on_enter, add="+")
         widget.bind("<Leave>", on_leave, add="+")
 
-    # --- Theme Switching Engine ---
 
     def toggle_theme(self):
         """Switches between Dark and Light mode instantly."""
@@ -242,12 +224,17 @@ class WeatherAppGUI:
         # Header section
         self.header_frame.configure(bg=t["bg"])
         self.title_box.configure(bg=t["bg"])
+        if hasattr(self, "title_row"):
+            self.title_row.configure(bg=t["bg"])
         self.logo_lbl.configure(
             bg=t["bg"],
+            bd=0,
+            relief="flat",
+            highlightthickness=0,
             image=self.get_ui_photo("logo", t["accent"], (34, 34))
         )
-        self.title_lbl.configure(bg=t["bg"], fg=t["text_main"])
-        self.subtitle_lbl.configure(bg=t["bg"], fg=t["text_muted"])
+        self.title_lbl.configure(bg=t["bg"], fg=t["text_main"], bd=0, relief="flat", highlightthickness=0)
+        self.subtitle_lbl.configure(bg=t["bg"], fg=t["text_muted"], bd=0, relief="flat", highlightthickness=0)
         self.controls_box.configure(bg=t["bg"])
 
         # Header Buttons with Graphical Icons and Dark Mode borders
@@ -328,6 +315,10 @@ class WeatherAppGUI:
         # Nav Tabs Bar
         if hasattr(self, "nav_tabs_frame"):
             self.nav_tabs_frame.configure(bg=t["bg"])
+            if hasattr(self, "nav_inner"):
+                self.nav_inner.configure(bg=t["bg"])
+            if hasattr(self, "scroll_tip"):
+                self.scroll_tip.configure(bg=t["bg"], fg=t["text_subtle"])
             self._update_tab_styles()
 
         # Main Scrollable Container & Canvas
@@ -401,7 +392,6 @@ class WeatherAppGUI:
         self.live_clock_lbl.configure(bg=t["bg"], fg=t["text_muted"])
         self.version_lbl.configure(bg=t["bg"], fg=t["accent"])
 
-    # --- UI Construction ---
 
     def _build_header(self):
         self.header_frame = tk.Frame(self.root, bg=self.t["bg"])
@@ -412,18 +402,21 @@ class WeatherAppGUI:
         self.title_box.pack(side="left")
 
         # Logo and Title row
-        title_row = tk.Frame(self.title_box, bg=self.t["bg"])
-        title_row.pack(anchor="w")
+        self.title_row = tk.Frame(self.title_box, bg=self.t["bg"])
+        self.title_row.pack(anchor="w")
 
-        self.logo_lbl = tk.Label(title_row, bg=self.t["bg"])
+        self.logo_lbl = tk.Label(self.title_row, bg=self.t["bg"], bd=0, relief="flat", highlightthickness=0)
         self.logo_lbl.pack(side="left", padx=(0, 10))
 
         self.title_lbl = tk.Label(
-            title_row,
+            self.title_row,
             text="SkyCast Weather",
             font=("Segoe UI", 20, "bold"),
             fg=self.t["text_main"],
-            bg=self.t["bg"]
+            bg=self.t["bg"],
+            bd=0,
+            relief="flat",
+            highlightthickness=0
         )
         self.title_lbl.pack(side="left")
 
@@ -432,7 +425,10 @@ class WeatherAppGUI:
             text="Real-Time Weather Intelligence • Hourly & 5-Day Forecasts",
             font=("Segoe UI", 9),
             fg=self.t["text_muted"],
-            bg=self.t["bg"]
+            bg=self.t["bg"],
+            bd=0,
+            relief="flat",
+            highlightthickness=0
         )
         self.subtitle_lbl.pack(anchor="w", pady=(2, 0))
 
@@ -581,12 +577,12 @@ class WeatherAppGUI:
         self.nav_tabs_frame = tk.Frame(self.root, bg=self.t["bg"])
         self.nav_tabs_frame.pack(fill="x", padx=24, pady=(2, 6))
 
-        nav_inner = tk.Frame(self.nav_tabs_frame, bg=self.t["bg"])
-        nav_inner.pack(side="left")
+        self.nav_inner = tk.Frame(self.nav_tabs_frame, bg=self.t["bg"])
+        self.nav_inner.pack(side="left")
 
         # Tab: Overview (All)
         self.tab_all_btn = tk.Button(
-            nav_inner,
+            self.nav_inner,
             text=" Overview (All)",
             font=("Segoe UI", 9, "bold"),
             relief="flat",
@@ -601,7 +597,7 @@ class WeatherAppGUI:
 
         # Tab: Hourly (Next Hours)
         self.tab_hourly_btn = tk.Button(
-            nav_inner,
+            self.nav_inner,
             text=" Hourly Forecast",
             font=("Segoe UI", 9, "bold"),
             relief="flat",
@@ -616,7 +612,7 @@ class WeatherAppGUI:
 
         # Tab: 5-Day Outlook (Daily)
         self.tab_daily_btn = tk.Button(
-            nav_inner,
+            self.nav_inner,
             text=" 5-Day Outlook",
             font=("Segoe UI", 9, "bold"),
             relief="flat",
@@ -630,14 +626,17 @@ class WeatherAppGUI:
         self.tab_daily_btn.pack(side="left")
 
         # Right tip label
-        scroll_tip = tk.Label(
+        self.scroll_tip = tk.Label(
             self.nav_tabs_frame,
             text="Tip: Scroll with mouse wheel or select tabs",
             font=("Segoe UI", 8),
             fg=self.t["text_subtle"],
-            bg=self.t["bg"]
+            bg=self.t["bg"],
+            bd=0,
+            relief="flat",
+            highlightthickness=0
         )
-        scroll_tip.pack(side="right", pady=4)
+        self.scroll_tip.pack(side="right", pady=4)
 
     def select_tab(self, tab_name: str):
         """Switches visible view sections between All, Hourly, and 5-Day Outlook."""
@@ -930,14 +929,13 @@ class WeatherAppGUI:
 
         self.version_lbl = tk.Label(
             self.footer_frame,
-            text="SkyCast v2.5 • Dynamic Edition",
+            text="SkyCast Weather",
             font=("Segoe UI", 8, "bold"),
             fg=self.t["accent"],
             bg=self.t["bg"]
         )
         self.version_lbl.pack(side="right")
 
-    # --- Dynamic Weather Ambience & Particle System ---
 
     def _init_particles(self):
         """Initializes particle pool for ambient weather animations."""
@@ -1108,7 +1106,6 @@ class WeatherAppGUI:
         if self.anim_running and self.root.winfo_exists():
             self.root.after(35, self._tick_ambience)
 
-    # --- Live Clock & Status Radar Pulsing Engine ---
 
     def _tick_clock_and_pulse(self):
         """Updates live digital clock and pulses the status radar indicator every 1000ms."""
@@ -1141,7 +1138,6 @@ class WeatherAppGUI:
         if self.anim_running and self.root.winfo_exists():
             self.root.after(1000, self._tick_clock_and_pulse)
 
-    # --- Unit Toggle & Re-rendering ---
 
     def toggle_unit(self):
         """Toggle between Celsius and Fahrenheit and refresh UI immediately."""
@@ -1152,7 +1148,6 @@ class WeatherAppGUI:
         if self.weather_data:
             self._render_weather_data()
 
-    # --- Search & Network Call Management ---
 
     def on_search_clicked(self):
         query = self.city_entry.get().strip()
@@ -1169,9 +1164,10 @@ class WeatherAppGUI:
         def worker():
             try:
                 city = detect_user_location()
-                self.root.after(0, lambda: self._on_location_detected(city))
+                self.root.after(0, lambda c=city: self._on_location_detected(c))
             except Exception as e:
-                self.root.after(0, lambda: self._on_location_detect_failed(str(e)))
+                err_msg = str(e)
+                self.root.after(0, lambda m=err_msg: self._on_location_detect_failed(m))
 
         threading.Thread(target=worker, daemon=True).start()
 
@@ -1202,22 +1198,28 @@ class WeatherAppGUI:
         def worker():
             try:
                 data = fetch_weather_data(query)
-                self.root.after(0, lambda: self._on_fetch_success(data, query))
+                self.root.after(0, lambda d=data, q=query: self._on_fetch_success(d, q))
             except ValidationError as e:
-                self.root.after(0, lambda: self._on_fetch_error(f"Validation Error: {str(e)}"))
+                msg = f"Validation Error: {str(e)}"
+                self.root.after(0, lambda m=msg: self._on_fetch_error(m))
             except CityNotFoundError as e:
-                self.root.after(0, lambda: self._on_fetch_error(str(e)))
+                msg = str(e)
+                self.root.after(0, lambda m=msg: self._on_fetch_error(m))
             except InvalidApiKeyError as e:
-                err_msg = str(e) if (str(e) and str(e) != "None") else "API Key Not Active Yet: OpenWeatherMap keys take 10 to 60 minutes after signup to activate."
-                self.root.after(0, lambda: self._on_fetch_error(err_msg))
+                msg = str(e) if (str(e) and str(e) != "None") else "API Key Not Active Yet: OpenWeatherMap keys take 10 to 60 minutes after signup to activate."
+                self.root.after(0, lambda m=msg: self._on_fetch_error(m))
             except NetworkError as e:
-                self.root.after(0, lambda: self._on_fetch_error(f"Network Error: {str(e)}"))
+                msg = f"Network Error: {str(e)}"
+                self.root.after(0, lambda m=msg: self._on_fetch_error(m))
             except RateLimitError as e:
-                self.root.after(0, lambda: self._on_fetch_error(str(e)))
+                msg = str(e)
+                self.root.after(0, lambda m=msg: self._on_fetch_error(m))
             except WeatherAppError as e:
-                self.root.after(0, lambda: self._on_fetch_error(f"Weather Error: {str(e)}"))
+                msg = f"Weather Error: {str(e)}"
+                self.root.after(0, lambda m=msg: self._on_fetch_error(m))
             except Exception as e:
-                self.root.after(0, lambda: self._on_fetch_error(f"Unexpected error: {str(e)}"))
+                msg = f"Unexpected error: {str(e)}"
+                self.root.after(0, lambda m=msg: self._on_fetch_error(m))
 
         threading.Thread(target=worker, daemon=True).start()
 
@@ -1245,7 +1247,6 @@ class WeatherAppGUI:
         self.search_btn.config(state="normal", text="Get Weather")
         self.show_banner(message, is_error=True)
 
-    # --- UI Rendering ---
 
     def _render_weather_data(self):
         if not self.weather_data:
@@ -1427,7 +1428,6 @@ class WeatherAppGUI:
             # Dynamic Hover Elevation & Glow
             self._bind_hover_effect(row, t["card_surface"], t["card_hover"], t["panel_border"], t["panel_hover_border"])
 
-    # --- Settings / API Key Modal ---
 
     def open_settings_modal(self):
         t = self.t
@@ -1521,7 +1521,6 @@ class WeatherAppGUI:
             test_status_lbl.config(text="Contacting OpenWeatherMap servers...", fg=t["accent"])
 
             def worker():
-                import requests
                 try:
                     r = requests.get(
                         "https://api.openweathermap.org/data/2.5/weather",
@@ -1541,7 +1540,7 @@ class WeatherAppGUI:
                     msg = f"Network test failed: {ex}"
                     color = t["error_text"]
 
-                modal.after(0, lambda: test_status_lbl.config(text=msg, fg=color))
+                modal.after(0, lambda m=msg, c=color: test_status_lbl.config(text=m, fg=c))
 
             threading.Thread(target=worker, daemon=True).start()
 

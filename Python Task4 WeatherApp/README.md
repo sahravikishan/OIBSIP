@@ -1,133 +1,153 @@
 # SkyCast - Real-Time Weather Application
 
-A comprehensive Python Weather Application featuring both a **Beginner Tier** Command-Line Interface (CLI) and an **Advanced Tier** Graphical User Interface (GUI) powered by the OpenWeatherMap API.
+A Python Weather Application developed for Oasis Infobyte (OIBSIP) Task 4, providing both a Beginner Tier Command-Line Interface (CLI) and an Advanced Tier Graphical User Interface (GUI) built with Tkinter, Pillow, and the OpenWeatherMap API.
 
 ---
 
-## 🌟 Feature Checklist
+## Project Overview
 
-### Beginner Tier (CLI)
-- [x] **Location Query**: Interactive prompt for city name or ZIP code, plus command-line argument support (`python weather_cli.py "Pune"`).
-- [x] **API Integration**: Real-time HTTP GET to OpenWeatherMap API and structured JSON parsing.
-- [x] **Weather Metrics Display**:
-  - Current Temperature in both **Celsius (°C)** and **Fahrenheit (°F)**
+SkyCast retrieves real-time meteorological observations and 5-day forecast data from OpenWeatherMap. The application provides two operating modes:
+- A command-line interface supporting interactive querying and direct argument lookup.
+- A desktop graphical user interface with responsive threading, metric displays, unit toggling, and local configuration persistence.
+
+---
+
+## Features
+
+### Core Capabilities (Beginner Tier)
+- **Location Lookup**: Interactive prompt supporting city names (e.g., Pune, Delhi, London) and postal / ZIP codes.
+- **Direct CLI Argument**: Query weather immediately via command line: `python main.py --cli Pune`.
+- **Comprehensive Weather Metrics**:
+  - Temperature in Celsius (°C) and Fahrenheit (°F)
+  - Perceived temperature ("Feels Like")
   - Humidity percentage (%)
-  - Weather condition and detailed description (e.g., "Clouds (scattered clouds)")
-  - Wind speed in **m/s** and **mph**
-  - Atmospheric pressure (hPa)
-- [x] **Robust Error Handling**:
-  - City not found (HTTP 404)
-  - Invalid / missing API key (HTTP 401)
-  - Network timeouts and connection drops
-  - Rate limiting (HTTP 429)
-- [x] **Input Validation**: Rejects empty strings, whitespace, or excessively short queries with clear guidance.
+  - Wind speed in meters per second (m/s) and miles per hour (mph)
+  - Atmospheric pressure in hectopascals (hPa)
+  - Weather condition category and detailed description
+- **Input Validation**: Strips extra whitespace, validates query length, and reports invalid entries before dispatching network requests.
+- **Error Handling**: Distinct handling for 404 (location not found), 401 (invalid/inactive key), 429 (rate limit), and network connectivity/timeout errors.
 
-### Advanced Tier (GUI)
-- [x] **🎨 Elevated Dark & Light Theme**: Deep Obsidian & Neon Cyan dark theme with modern glassmorphism borders and clean daylight mode; preferences persist to `config.json`.
-- [x] **✨ Dynamic Weather Ambience Engine**: Real-time canvas particle animations matching live conditions (Rain, Snow, Drifting Clouds, Radiant Clear Sky).
-- [x] **⏱️ Live Digital Clock & Radar Pulse**: Live ticking real-time clock and animated pulsing status dot for active connection monitoring.
-- [x] **💫 Interactive Hover Elevation & Glow**: Dynamic hover highlights on all buttons, metric cards, hourly cards, and daily forecast rows.
-- [x] **📐 Custom Vector-Quality Graphical Icons (No Emojis)**: High-resolution graphical icons rendered with Pillow (`icon_assets.py`) for search, location pins, settings gear, sun/moon themes, and weather metrics; zero emojis used.
-- [x] **Weather Condition Icons**: Fetches and renders official OpenWeatherMap weather icons with local disk caching and offline vector fallbacks.
-- [x] **Hourly Forecast Panel**: Shows forecast cards for the next 6–9 hours with timestamps, weather icons, conditions, and temperatures.
-- [x] **Daily Forecast Panel**: Aggregates a 5-day forecast displaying day names, dates, weather condition icons, and daily min/max temperatures.
-- [x] **Unit Toggle (°C / °F)**: Instant toggle button in the header; recalculates and updates the entire UI without refetching from the network.
-- [x] **Status Badges**: Polished glowing pill badges for `LIVE DATA` and `DEMO PREVIEW` with breathing radar dots.
-- [x] **📍 IP-Based Auto-Detection**: Automatically detects the user's city via the `ipinfo.io` (or fallback `ip-api.com`) free API.
-- [x] **In-GUI Error Notifications**: Visually distinct inline error banners inside the GUI (no crashes or terminal popups).
-- [x] **Non-Blocking Architecture**: Background threading (`threading.Thread`) ensures the GUI stays smooth and responsive during API calls.
-- [x] **API Key Settings Modal**: In-app dialog to input, update, or clear your OpenWeatherMap key, saved securely to `config.json`.
-- [x] **Demo Preview Mode**: Fully functional offline demo preview mode for testing before registering an API key.
+### Advanced Capabilities (GUI Tier)
+- **Desktop Graphical Interface**: Custom Tkinter layout featuring dual themes (Dark Mode and Light Mode).
+- **Unit Toggle (°C / °F)**: Instant unit conversion without re-requesting data from the network.
+- **Hourly Forecast**: Displays weather forecasts for upcoming intervals with timestamps, conditions, and temperatures.
+- **5-Day Daily Forecast**: Aggregates daily forecasts with minimum and maximum temperatures, condition descriptions, and weather icons.
+- **Dynamic Weather Ambience**: Canvas-based particle animation reflecting current weather conditions (rain, snow, clouds, or clear sky).
+- **Vector-Drawn UI Icons**: Anti-aliased graphical icons generated programmatically via Pillow (`icon_assets.py`), avoiding platform emoji dependency.
+- **Weather Condition Icons**: Fetches and caches official OpenWeatherMap icon assets locally with vector fallback rendering.
+- **Automatic Location Detection**: Optional IP-based geolocation lookup via `ipinfo.io` (with fallback to `ip-api.com`).
+- **Non-Blocking Architecture**: Background daemon threads for network requests to prevent UI lockup.
+- **In-App API Key Configuration**: Settings modal allowing users to enter, test, and save their OpenWeatherMap API key.
+- **Demo Mode**: Built-in mock dataset allowing complete feature testing without an API key.
 
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
 
 - **Language**: Python 3.8+
 - **HTTP Client**: `requests`
-- **Image Processing**: `Pillow` (`PIL`) for downloading, resizing, and caching weather icons
-- **GUI Framework**: `tkinter` & `ttk`
-- **Testing**: `unittest` with mock responses
+- **Image Processing**: `Pillow` (PIL) for icon generation, caching, and downsampling
+- **GUI Toolkit**: `tkinter` & `ttk` (Standard Python Library)
+- **Testing Framework**: `unittest` with mock objects
 - **APIs**:
-  - [OpenWeatherMap API](https://openweathermap.org/api) (Current Weather & 5-Day Forecast)
-  - [ipinfo.io](https://ipinfo.io) (IP-based Geolocation)
+  - [OpenWeatherMap API](https://openweathermap.org/api) (Current Weather & 5-Day / 3-Hour Forecast)
+  - [ipinfo.io](https://ipinfo.io) (IP-based Geolocation fallback)
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 Python Task4 WeatherApp/
-├── weather_service.py       # Core weather client, data models, icon cache & auto-detection
-├── weather_gui.py           # Advanced Tier: Modern Tkinter GUI
-├── weather_cli.py           # Beginner Tier: Interactive & CLI interface
-├── main.py                  # Unified entry point (defaults to GUI, accepts --cli)
-├── config.py                # Configuration & API key persistence (config.json / .env)
-├── test_weather.py          # Unit tests with mocks for API, conversions & errors
-├── requirements.txt         # Project dependencies (requests, Pillow)
-└── README.md                # Documentation & User Guide
+├── weather_service.py       # API integration, data models, icon caching & geolocation
+├── weather_gui.py           # Tkinter GUI implementation with dual themes & animations
+├── weather_cli.py           # Command-line interface with interactive and argument modes
+├── config.py                # Configuration loader and credential manager
+├── icon_assets.py           # Procedural Pillow-based vector icon renderer
+├── main.py                  # Application entry point (GUI default, --cli flag)
+├── test_weather.py          # Automated unit test suite with mock API responses
+├── requirements.txt         # External dependencies (requests, Pillow)
+├── screenshots/             # Application preview captures (GUI Overview & Forecast Tabs)
+├── .env.example             # Template for environment-based API key configuration
+├── .gitignore               # Excludes secrets, cache, and virtual environments
+└── README.md                # Project documentation and user guide
 ```
 
 ---
 
-## 🚀 Getting Started
+## Installation & Setup
 
-### 1. Prerequisites & Installation
+### 1. Clone or Open the Workspace
+Ensure you are inside the Task 4 project directory:
+```bash
+cd "Python Task4 WeatherApp"
+```
 
-Install the required Python packages:
-
+### 2. Install Dependencies
+Install the required packages using pip:
 ```bash
 pip install -r requirements.txt
 ```
 
-*(Note: `tkinter` is included with standard Python distributions on Windows and macOS).*
+*(Note: `tkinter` is included by default with standard Python installations on Windows and macOS).*
 
 ---
 
-### 2. Getting an OpenWeatherMap API Key (Free)
+## API Key Configuration
 
-1. Sign up for a free account at [OpenWeatherMap](https://openweathermap.org/users/sign_up).
-2. Go to your account profile and navigate to the **API keys** tab.
-3. Copy your 32-character key.
-4. You can configure it in any of the following ways:
-   - **Through the GUI**: Launch `python main.py`, click **⚙ API Key** in the top right, paste the key, and click **Save Key**.
-   - **Through the CLI**: Run `python weather_cli.py --set-key YOUR_API_KEY`.
-   - **Via Environment Variable or `.env` file**:
-     ```bash
-     export OPENWEATHER_API_KEY="your_api_key_here"
-     ```
-     or create a `.env` file containing:
-     ```env
-     OPENWEATHER_API_KEY=your_api_key_here
-     ```
+SkyCast uses the free tier of the OpenWeatherMap API.
 
-> **Note**: If no API key is provided, SkyCast automatically operates in **Demo Preview Mode** so you can immediately explore the interface and features.
+1. Create a free account at [OpenWeatherMap](https://openweathermap.org/users/sign_up).
+2. Generate an API key from your account dashboard.
+3. Supply the key using one of three supported methods:
+
+### Option A: Via GUI Settings (Recommended)
+Launch the application (`python main.py`), click **API Key** in the header, paste your key, test it, and click **Save Key**. The key is stored locally in `config.json` (which is excluded from version control).
+
+### Option B: Via Command Line
+```bash
+python weather_cli.py --set-key YOUR_API_KEY
+```
+
+### Option C: Via Environment Variable or `.env` File
+Create a `.env` file in the project root based on `.env.example`:
+```env
+OPENWEATHER_API_KEY=your_32_character_api_key
+```
+Or set it in your environment:
+```bash
+# Windows PowerShell
+$env:OPENWEATHER_API_KEY="your_32_character_api_key"
+
+# Linux / macOS
+export OPENWEATHER_API_KEY="your_32_character_api_key"
+```
+
+> **Note**: Newly registered OpenWeatherMap keys typically require 10 to 60 minutes after confirmation to activate on their servers. If no key is provided, the application runs in Demo Preview mode with simulated data.
 
 ---
 
-## 💻 Usage
+## How to Run
 
-### Running the Advanced GUI Application (Default)
-
+### Graphical User Interface (Default)
 ```bash
 python main.py
 ```
-or:
+or directly:
 ```bash
 python weather_gui.py
 ```
 
-#### GUI Features Walkthrough:
-1. **Search**: Enter any city or ZIP code (e.g., `Pune`, `Bangalore`, `Delhi`, `London`, `Tokyo`) and press **Enter** or click **Get Weather**.
-2. **Auto Detect**: Click **📍 Auto Detect** to determine your current city via your IP address.
-3. **Unit Switcher**: Click the **Unit: °C / °F** button in the top right to instantly swap all temperature values.
-4. **Settings**: Click **⚙ API Key** to configure or view your API key.
+#### GUI Navigation:
+- **Search Bar**: Enter a city name or ZIP code and press **Enter** or click **Get Weather**.
+- **Auto Detect**: Click **Auto Detect** to determine your current city via your IP address.
+- **Unit Switcher**: Toggle the **°C / °F** button to convert all temperatures dynamically.
+- **Theme Toggle**: Switch between Dark and Light mode.
+- **View Tabs**: Filter between Overview (All), Hourly Forecast, and 5-Day Outlook.
 
----
+### Command-Line Interface (CLI Mode)
 
-### Running the Beginner CLI Application
-
-You can run the CLI interactively:
+Run interactive CLI mode:
 ```bash
 python main.py --cli
 ```
@@ -136,7 +156,7 @@ or:
 python weather_cli.py
 ```
 
-Or query a city directly in one command:
+Query a location directly in one command:
 ```bash
 python main.py --cli Pune
 # or
@@ -169,19 +189,50 @@ python weather_cli.py "Bangalore"
 
 ---
 
-## 🧪 Running Unit Tests
+## Screenshots
 
-To run the automated test suite verifying conversions, JSON response parsing, validation, and error classifications:
+### Light Mode Interface
+![SkyCast Weather - Light Mode](screenshots/screenshot_light_mode.png)
+
+### Dark Mode Interface
+![SkyCast Weather - Dark Mode](screenshots/screenshot_dark_mode.png)
+
+---
+
+## Error Handling
+
+The application contains explicit exception classes and recovery paths:
+- **`ValidationError`**: Triggers when input is blank or fewer than 2 characters.
+- **`CityNotFoundError`**: Triggers on HTTP 404 from the weather service; prompts user to verify spelling.
+- **`InvalidApiKeyError`**: Triggers on HTTP 401; informs user about key requirements and activation delay.
+- **`RateLimitError`**: Triggers on HTTP 429 when OpenWeatherMap rate thresholds are reached.
+- **`NetworkError`**: Triggers on timeouts (configured at 8s) or connection drops.
+- **In-GUI Banners**: Errors display as inline status notifications without crashing or throwing popup dialogs.
+
+---
+
+## Testing
+
+A test suite covers unit conversion mathematics, input validation, JSON response parsing, and mocked network error states:
 
 ```bash
 python -m unittest test_weather.py
 ```
 
-Expected output:
+Expected result:
 ```text
 ................
 ----------------------------------------------------------------------
-Ran 16 tests in 0.012s
+Ran 16 tests in 0.010s
 
 OK
 ```
+
+---
+
+## Future Improvements
+
+- Historical weather trends and multi-day temperature graphs using `matplotlib`.
+- Severe weather alerts and push notifications for registered locations.
+- Multiple saved favorite cities with quick-access tabs in the GUI.
+- Air Quality Index (AQI) integration using OpenWeatherMap's Air Pollution API.
