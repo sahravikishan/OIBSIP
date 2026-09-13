@@ -153,3 +153,25 @@ function updateThemeIcon() {
             : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
     }
 }
+
+function togglePasswordVisibility(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+
+    const isCurrentlyPassword = input.type === "password";
+    input.type = isCurrentlyPassword ? "text" : "password";
+
+    if (btn) {
+        btn.classList.toggle("is-visible", isCurrentlyPassword);
+        btn.setAttribute("title", isCurrentlyPassword ? "Hide Password" : "Show Password");
+        btn.setAttribute("aria-label", isCurrentlyPassword ? "Hide Password" : "Show Password");
+
+        const eyeOpen = btn.querySelector(".eye-open");
+        const eyeClosed = btn.querySelector(".eye-closed");
+        if (eyeOpen && eyeClosed) {
+            eyeOpen.style.display = isCurrentlyPassword ? "none" : "block";
+            eyeClosed.style.display = isCurrentlyPassword ? "block" : "none";
+        }
+    }
+}
+

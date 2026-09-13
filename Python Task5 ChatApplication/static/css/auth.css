@@ -251,6 +251,48 @@
     transition: border-color 0.2s, box-shadow 0.2s;
 }
 
+.input-with-icon:has(.btn-password-toggle) input {
+    padding-right: 2.85rem;
+}
+
+.btn-password-toggle {
+    position: absolute;
+    right: 0.85rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    padding: 0.35rem;
+    margin: 0;
+    cursor: pointer;
+    color: var(--text-muted);
+    border-radius: var(--radius-full);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease, background-color 0.2s ease;
+    z-index: 2;
+    line-height: 0;
+}
+
+.btn-password-toggle:hover {
+    color: var(--accent-primary);
+    background-color: var(--accent-soft);
+}
+
+.btn-password-toggle:focus-visible {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 1px;
+}
+
+.btn-password-toggle .eye-icon {
+    display: block;
+    width: 18px;
+    height: 18px;
+    stroke-width: 2;
+    flex-shrink: 0;
+}
+
 .input-with-icon input:focus {
     border-color: var(--accent-primary);
     box-shadow: 0 0 0 2px var(--accent-soft);
