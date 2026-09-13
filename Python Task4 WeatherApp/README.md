@@ -12,6 +12,16 @@ HawamanJankari retrieves real-time meteorological observations and 5-day forecas
 
 ---
 
+## Screenshots
+
+### Light Mode Interface
+![HawamanJankari - Light Mode](screenshots/screenshot_light_mode.png)
+
+### Dark Mode Interface
+![HawamanJankari - Dark Mode](screenshots/screenshot_dark_mode.png)
+
+---
+
 ## Features
 
 ### Core Capabilities (Beginner Tier)
@@ -186,16 +196,6 @@ python weather_cli.py "Bangalore"
   Fri      +4d      Clear        24.5°C / 32.0°C  (76.1°F / 89.6°F)
   --------------------------------------------
 ```
-
----
-
-## Screenshots
-
-### Light Mode Interface
-![HawamanJankari - Light Mode](screenshots/screenshot_light_mode.png)
-
-### Dark Mode Interface
-![HawamanJankari - Dark Mode](screenshots/screenshot_dark_mode.png)
 
 ---
 
