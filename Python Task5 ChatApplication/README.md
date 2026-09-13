@@ -46,32 +46,6 @@ Sanwad is an independently architected, production-structured real-time web chat
 
 ---
 
-### 📝 Screenshot Capture Prompts
-
-Use the following exact prompts to reproduce or capture UI screenshots for both Light and Dark modes:
-
-#### 🌙 Prompt 1: Dark Mode Chat Screenshot Capture
-```text
-Navigate to http://127.0.0.1:5000 in your web browser.
-1. Sign in or register with username 'Alice' and password 'password123'.
-2. Select any room (e.g., '#Projects') or switch to 'Personal Chat' mode to select a direct contact.
-3. Ensure Dark Mode is active (default Nordic Pine theme with dark slate background #0b141a / #111b21 and emerald green accents #00a884; toggle via the circular Sun/Moon icon in the top header if currently in light mode).
-4. Verify the active participant counter, 12-hour AM/PM timestamps, and floating composer.
-5. Capture a high-resolution, full-window screenshot of the active interface and save it in screenshots/.
-```
-
-#### ☀️ Prompt 2: Light Mode Chat Screenshot Capture
-```text
-Navigate to http://127.0.0.1:5000 in your web browser.
-1. Sign in or register with username 'Alice' and password 'password123'.
-2. Select any room (e.g., '#Projects') or switch to 'Personal Chat' mode to select a direct contact.
-3. Switch to Light Mode by clicking the circular Sun/Moon theme toggle button in the top navigation header (verify clean light background #f0f2f5 / #ffffff and fresh mint accents).
-4. Confirm that the message composer, chat bubbles, sidebar, and 12-hour AM/PM timestamps display with high contrast and sharp typography.
-5. Capture a high-resolution, full-window screenshot of the active interface and save it in screenshots/.
-```
-
----
-
 ## 4. Objective
 The objective of this project is to satisfy 100% of both **Beginner** and **Advanced** requirements specified for the OIBSIP Chat Application task, demonstrating sound software engineering, robust database design, WebSocket protocol handling, input validation, and security/privacy transparency without relying on boilerplate templates or copied repositories.
 
@@ -241,15 +215,6 @@ CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
 CREATE INDEX IF NOT EXISTS idx_rooms_name ON rooms(name);
 ```
 
-### Relational Schema Diagram
-```
-users (1) ───< creates >─── (0..N) rooms
-  │                                   │
- (1)                                 (1)
-  │                                   │
-  └───< posts >── (0..N) messages >───┘
-```
-
 ---
 
 ## 11. Installation Guide
@@ -369,24 +334,7 @@ http://localhost:5000
 
 ---
 
-## 21. Message History Explanation
-Unlike ephemeral in-memory chat systems, Sanwad persists all messages to SQLite. When a user joins a room, the server executes:
-```sql
-SELECT m.id, m.content, m.created_at, u.username
-FROM messages m
-JOIN users u ON m.user_id = u.id
-WHERE m.room_id = ?
-ORDER BY m.created_at ASC, m.id ASC
-LIMIT 100;
-```
-This guarantees:
-- Messages are displayed in strictly chronological order.
-- Previous messages reload when switching rooms.
-- Conversation history survives server restarts.
-
----
-
-## 22. Notification Behavior
+## 21. Notification Behavior
 - **Tab-Focus Detection**: Uses the HTML5 Page Visibility API (`document.hidden`) and window focus listeners.
 - **Active Window**: When the chat tab is actively focused, incoming messages appear in the message stream with no annoying popups.
 - **Background / Minimized Window**: When the tab is inactive or minimized, a native desktop notification (`#Room - Sender: Message`) appears, accompanied by a subtle audio chime.
@@ -395,7 +343,7 @@ This guarantees:
 
 ---
 
-## 23. Emoji Support
+## 22. Emoji Support
 Sanwad natively supports emoji shortcodes. Users can type shortcodes directly or use the visual picker.
 
 ### Supported Common Shortcodes
@@ -406,7 +354,7 @@ Sanwad natively supports emoji shortcodes. Users can type shortcodes directly or
 
 ---
 
-## 24. Security Considerations
+## 23. Security Considerations
 - **SQL Injection Prevention**: 100% of database interactions utilize parameterized queries (`?`). String interpolation/concatenation is strictly forbidden.
 - **Cross-Site Scripting (XSS) Prevention**: All message contents are rendered using DOM `textContent` (text nodes) rather than raw `innerHTML`. Malicious tags like `<script>` or `<img onerror=...>` are rendered as harmless text.
 - **Session Identity Enforcement**: The server determines message authorship strictly from the server-side signed session cookie. Clients cannot forge the sender username in the socket payload.
@@ -414,21 +362,21 @@ Sanwad natively supports emoji shortcodes. Users can type shortcodes directly or
 
 ---
 
-## 25. Password Storage Explanation
+## 24. Password Storage Explanation
 - Passwords are **never stored in plain text**.
 - Passwords are encrypted using **PBKDF2-HMAC-SHA256** with a unique 16-byte random salt per user (via `werkzeug.security`).
 - Even with direct access to the SQLite database file, stored password hashes cannot be reversed back to plain text.
 
 ---
 
-## 26. Message Storage Explanation
+## 25. Message Storage Explanation
 - Chat messages are stored in plain text inside the server's local SQLite database (`database/chat.db`).
 - Each record retains `room_id`, `user_id`, `content`, and `created_at`.
 - System administrators or anyone with read access to the host server can inspect message contents in `chat.db`.
 
 ---
 
-## 27. End-to-End Encryption Limitation Notice
+## 26. End-to-End Encryption Limitation Notice
 
 > [!WARNING]
 > ### IMPORTANT SECURITY STATEMENT
@@ -440,14 +388,14 @@ Sanwad natively supports emoji shortcodes. Users can type shortcodes directly or
 
 ---
 
-## 28. Privacy Considerations
+## 27. Privacy Considerations
 - User registration requires only a username and password; no email or Personally Identifiable Information (PII) is gathered.
 - Disconnecting or logging out removes the active session from server memory.
 - Messages posted in public rooms are visible to any authenticated user who joins that room.
 
 ---
 
-## 29. Testing & Verification
+## 28. Testing & Verification
 
 ### Automated Test Suite
 Sanwad includes an automated test suite implemented with `pytest` covering all beginner and advanced requirements:
@@ -497,14 +445,14 @@ tests/test_validation_and_security.py::test_socket_send_empty_message_rejected P
 
 ---
 
-## 30. Known Limitations
+## 29. Known Limitations
 - **SQLite Concurrency**: SQLite in WAL mode performs well for hundreds of concurrent local users, but a distributed production deployment would benefit from PostgreSQL and Redis message queuing.
 - **Attachment Uploads**: Currently limited to text and emojis; media file uploads (images/videos) are not implemented.
 - **End-to-End Encryption**: As transparently documented, messages are stored plaintext in SQLite on the server.
 
 ---
 
-## 31. Future Improvements
+## 30. Future Improvements
 1. **File & Image Attachments** with thumbnail generation and virus scanning.
 2. **Signal Protocol End-to-End Encryption (E2EE)** for client-to-client cryptographic confidentiality.
 3. **Message Reactions**: Adding interactive emoji reactions to specific message IDs.
