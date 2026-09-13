@@ -1,8 +1,8 @@
 import datetime
-from typing import Dict, Any, Optional, Set
+from typing import Dict, Any, Optional
 from flask import session, request, current_app
-from flask_socketio import SocketIO, emit, join_room, leave_room, disconnect
-from database.db import get_room_by_id, get_room_messages, save_message, get_user_by_id, is_user_room_member
+from flask_socketio import SocketIO, emit, join_room, leave_room
+from database.db import get_room_by_id, get_room_messages, save_message, is_user_room_member
 from utils.security import validate_message_content
 from utils.emoji import parse_emoji
 

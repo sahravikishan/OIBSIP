@@ -1,5 +1,4 @@
 import os
-import sys
 from flask import Flask
 from flask_socketio import SocketIO
 from config import Config

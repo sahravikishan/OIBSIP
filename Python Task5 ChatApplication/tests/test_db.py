@@ -3,9 +3,7 @@ import tempfile
 import pytest
 from database.db import (
     init_db,
-    get_connection,
     create_user,
-    get_user_by_username,
     create_room,
     get_all_rooms,
     get_room_by_name,
