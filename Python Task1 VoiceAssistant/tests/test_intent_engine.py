@@ -148,6 +148,22 @@ class TestKnowledgeIntent:
         _assert_intent("who invented the telephone", "general_knowledge")
 
 
+# ── Assistant info tests ─────────────────────────────────────────────
+
+class TestAssistantInfoIntent:
+    def test_what_is_your_name(self):
+        _assert_intent("what is your name", "assistant_info")
+
+    def test_who_are_you(self):
+        _assert_intent("who are you", "assistant_info")
+
+    def test_who_created_you(self):
+        _assert_intent("who created you", "assistant_info")
+
+    def test_what_can_you_do(self):
+        _assert_intent("what can you do", "assistant_info")
+
+
 # ── Exit tests ──────────────────────────────────────────────────────
 
 class TestExitIntent:

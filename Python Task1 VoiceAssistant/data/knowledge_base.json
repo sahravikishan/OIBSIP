@@ -1,4 +1,11 @@
 {
+    "what is your name": "My name is Nova, your personal voice assistant.",
+    "who are you": "I am Nova, an advanced Python voice assistant built for the OIBSIP internship.",
+    "who created you": "I was created as an advanced Python voice assistant for the Oasis Infobyte (OIBSIP) programming internship.",
+    "who made you": "I was created as an advanced Python voice assistant for the Oasis Infobyte (OIBSIP) programming internship.",
+    "what can you do": "I can tell you the time and date, check live weather, search the web, schedule reminders, send emails, launch shortcuts, and answer knowledge questions.",
+    "how are you": "I'm doing well, thank you! How can I help you today?",
+    "thank you": "You're welcome! Let me know if you need anything else.",
     "what is python": "Python is a high-level, interpreted programming language known for its clear syntax and readability. It supports multiple programming paradigms including procedural, object-oriented, and functional programming.",
     "what is machine learning": "Machine learning is a branch of artificial intelligence where computer systems learn patterns from data and improve their performance on tasks without being explicitly programmed for each case.",
     "what is artificial intelligence": "Artificial intelligence is the field of computer science focused on creating systems that can perform tasks typically requiring human intelligence, such as understanding language, recognising images, and making decisions.",

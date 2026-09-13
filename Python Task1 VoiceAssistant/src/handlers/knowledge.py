@@ -36,43 +36,67 @@ except json.JSONDecodeError:
     print("[KNOWLEDGE] knowledge_base.json is malformed. Local QA unavailable.")
 
 
-def _stem_set(text: str) -> set[str]:
+# Common question stop words that should not trigger false positive matches
+_STOP_WORDS = {
+    "what", "is", "are", "the", "a", "an", "who", "which",
+    "how", "tell", "me", "about", "your", "can", "you", "do",
+    "of", "in", "to", "for", "please", "my"
+}
+
+
+def _stem_set(text: str, remove_stop_words: bool = False) -> set[str]:
     """Return the set of stems from the given text."""
     tokens = word_tokenize(text.lower())
+    if remove_stop_words:
+        tokens = [t for t in tokens if t not in _STOP_WORDS]
     return {_stemmer.stem(t) for t in tokens if t.isalpha()}
 
 
 def _search_local_kb(question: str) -> str | None:
     """
-    Search the local knowledge base by comparing stem overlap between
-    the user's question and each KB key. Returns the answer for the
-    best match above a threshold, or None.
+    Search the local knowledge base.
+    1. Tests exact string match first.
+    2. Compares content-word stem overlap (ignoring stop words like 'what', 'is').
+    3. Requires substantive keyword overlap to prevent false positive answers.
     """
     if not _knowledge_base:
         return None
 
-    question_stems = _stem_set(question)
-    if not question_stems:
+    q_clean = question.lower().strip().rstrip("?.!")
+    if q_clean in _knowledge_base:
+        return _knowledge_base[q_clean]
+
+    # Partial substring match for common questions
+    for key, answer in _knowledge_base.items():
+        if key in q_clean or q_clean in key:
+            return answer
+
+    # Content-word stem matching (excluding stop words)
+    q_content_stems = _stem_set(question, remove_stop_words=True)
+    if not q_content_stems:
         return None
 
     best_match = None
     best_score = 0.0
 
     for key, answer in _knowledge_base.items():
-        key_stems = _stem_set(key)
-        if not key_stems:
+        k_content_stems = _stem_set(key, remove_stop_words=True)
+        if not k_content_stems:
             continue
-        # Jaccard-like overlap: intersection / union
-        overlap = len(question_stems & key_stems)
-        union = len(question_stems | key_stems)
+
+        overlap = len(q_content_stems & k_content_stems)
+        if overlap == 0:
+            continue
+
+        union = len(q_content_stems | k_content_stems)
         score = overlap / union if union else 0.0
 
         if score > best_score:
             best_score = score
             best_match = answer
 
-    # Require at least 40% overlap to consider it a match
-    if best_score >= 0.4 and best_match:
+    # Require at least 50% substantive keyword overlap
+    if best_score >= 0.5 and best_match:
         return best_match
 
     return None

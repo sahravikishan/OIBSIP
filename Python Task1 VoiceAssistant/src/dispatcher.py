@@ -77,6 +77,9 @@ def dispatch(intent: str, confidence: float, raw_text: str,
     elif intent == "general_knowledge":
         return handle_knowledge(raw_text)
 
+    elif intent == "assistant_info":
+        return handle_knowledge(raw_text)
+
     elif intent == "exit":
         return None  # Caller checks for exit intent separately
 

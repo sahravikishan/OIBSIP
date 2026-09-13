@@ -24,7 +24,13 @@ _project_root = str(Path(__file__).resolve().parent.parent)
 if _project_root not in sys.path:
     sys.path.insert(0, _project_root)
 
-from src.voice_io import speak as base_speak, listen as base_listen
+from src.voice_io import (
+    speak as base_speak,
+    listen as base_listen,
+    get_working_microphone,
+    list_available_microphones,
+    set_active_microphone,
+)
 from src.intent_engine import IntentEngine
 from src.dispatcher import dispatch
 from src.handlers.custom_commands import load_custom_commands
@@ -70,6 +76,20 @@ class NovaVoiceAssistantGUI:
 
         # Build UI layout
         self._setup_ui()
+
+        # Asynchronously probe working microphone to avoid startup delay
+        def _detect_mic():
+            try:
+                mic = get_working_microphone()
+                from src.voice_io import _cached_mic_index
+                if _cached_mic_index is not None:
+                    self.root.after(0, lambda: self.footer_status.config(
+                        text=f"🎤 Mic: Device {_cached_mic_index} active • All systems operational"
+                    ))
+            except Exception:
+                pass
+
+        threading.Thread(target=_detect_mic, daemon=True).start()
 
         # Safe shutdown handler
         self.root.protocol("WM_DELETE_WINDOW", self.on_exit)
@@ -129,6 +149,49 @@ class NovaVoiceAssistantGUI:
             bg=BG_CARD
         )
         self.status_label.pack(side=tk.LEFT)
+
+        # Microphone Device Selector Frame
+        mic_select_frame = tk.Frame(header_frame, bg=BG_CARD)
+        mic_select_frame.pack(anchor=tk.CENTER, pady=(8, 0))
+
+        mic_icon = tk.Label(
+            mic_select_frame,
+            text="🎤 Mic:",
+            font=("Segoe UI", 9),
+            fg=TEXT_MUTED,
+            bg=BG_CARD
+        )
+        mic_icon.pack(side=tk.LEFT, padx=(0, 6))
+
+        self.mic_devices = list_available_microphones()
+        self.mic_names = [f"[{idx}] {name}" for idx, name in self.mic_devices]
+
+        self.mic_combo = ttk.Combobox(
+            mic_select_frame,
+            values=self.mic_names,
+            state="readonly",
+            font=("Segoe UI", 8),
+            width=38
+        )
+        self.mic_combo.pack(side=tk.LEFT)
+        self.mic_combo.bind("<<ComboboxSelected>>", self._on_mic_selected)
+
+        # Auto-select active mic (prioritize 48000Hz USB / Headset devices)
+        if self.mic_devices:
+            default_sel = 0
+            for i, (d_idx, d_name) in enumerate(self.mic_devices):
+                d_lower = d_name.lower()
+                if "usb" in d_lower and "48000" in d_lower:
+                    default_sel = i
+                    break
+            else:
+                for i, (d_idx, d_name) in enumerate(self.mic_devices):
+                    if "48000" in d_name:
+                        default_sel = i
+                        break
+
+            self.mic_combo.current(default_sel)
+            set_active_microphone(self.mic_devices[default_sel][0])
 
         # 2. Conversation History Display (Scrollable)
         chat_container = tk.Frame(self.root, bg=BG_DARK, padx=16, pady=10)
@@ -221,13 +284,58 @@ class NovaVoiceAssistantGUI:
             btn.grid(row=0, column=idx, padx=4, pady=2, sticky="ew")
             quick_frame.grid_columnconfigure(idx, weight=1)
 
+        # 4b. Text Command Input Box (Hybrid Voice & Text)
+        input_frame = tk.Frame(self.root, bg=BG_DARK, padx=16, pady=6)
+        input_frame.pack(fill=tk.X)
+
+        self.cmd_entry = tk.Entry(
+            input_frame,
+            font=("Segoe UI", 10),
+            bg=BG_CARD,
+            fg=TEXT_PRIMARY,
+            insertbackground=TEXT_PRIMARY,
+            relief=tk.FLAT,
+            bd=0,
+            highlightthickness=1,
+            highlightbackground=BTN_BG,
+            highlightcolor=ACCENT_BLUE
+        )
+        self.cmd_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, ipady=6, padx=(0, 8))
+        self.cmd_entry.bind("<Return>", lambda e: self._on_send_typed_command())
+
+        send_btn = tk.Button(
+            input_frame,
+            text="Send",
+            font=("Segoe UI", 9, "bold"),
+            bg=ACCENT_BLUE,
+            fg=BG_DARK,
+            activebackground="#74c7ec",
+            activeforeground=BG_DARK,
+            relief=tk.FLAT,
+            bd=0,
+            padx=16,
+            pady=6,
+            cursor="hand2",
+            command=self._on_send_typed_command
+        )
+        send_btn.pack(side=tk.RIGHT)
+
         # 5. Footer / Status Text
         footer_frame = tk.Frame(self.root, bg=BG_CARD, padx=16, pady=6)
-        footer_frame.pack(fill=tk.X, side=tk.BOTTOM, pady=(8, 0))
+        footer_frame.pack(fill=tk.X, side=tk.BOTTOM, pady=(4, 0))
+
+        # Display detected microphone in footer
+        try:
+            from src.voice_io import get_working_microphone, _cached_mic_index
+            mic_info = "🎤 Microphone detected"
+            if _cached_mic_index is not None:
+                mic_info = f"🎤 Mic Device {_cached_mic_index}"
+        except Exception:
+            mic_info = "🎤 System Mic"
 
         self.footer_status = tk.Label(
             footer_frame,
-            text="Assistant active • All systems operational",
+            text=f"{mic_info} • All systems operational",
             font=("Segoe UI", 8),
             fg=TEXT_MUTED,
             bg=BG_CARD
@@ -242,6 +350,15 @@ class NovaVoiceAssistantGUI:
             bg=BG_CARD
         )
         author_label.pack(side=tk.RIGHT)
+
+    def _on_mic_selected(self, event=None) -> None:
+        """Called when user changes the active microphone from the dropdown."""
+        idx_str = self.mic_combo.current()
+        if idx_str >= 0 and idx_str < len(self.mic_devices):
+            dev_idx, dev_name = self.mic_devices[idx_str]
+            set_active_microphone(dev_idx)
+            self.footer_status.config(text=f"🎤 Device {dev_idx} active • All systems operational")
+            self.append_conversation("NOVA", f"Switched microphone to: {dev_name}")
 
     # ── State and Status Helpers ─────────────────────────────────────
 
@@ -351,6 +468,14 @@ class NovaVoiceAssistantGUI:
         worker = threading.Thread(target=self._run_voice_interaction, daemon=True)
         worker.start()
 
+    def _on_send_typed_command(self) -> None:
+        """Handler for typed text input via the command entry box."""
+        query = self.cmd_entry.get().strip()
+        if not query:
+            return
+        self.cmd_entry.delete(0, tk.END)
+        self.trigger_text_query(query)
+
     def _run_voice_interaction(self) -> None:
         """
         Background worker that runs the full voice interaction pipeline:
@@ -358,16 +483,15 @@ class NovaVoiceAssistantGUI:
         """
         try:
             self.set_status("Listening...")
-            user_text = base_listen(timeout=6, phrase_time_limit=12)
+            user_text = base_listen(timeout=8, phrase_time_limit=12)
 
             if user_text is None:
-                self.set_status("Error")
+                self.set_status("Ready")
                 self.append_conversation(
                     "NOVA",
-                    "I didn't catch that or microphone timed out. Please click 'Start Listening' and try again.",
+                    "No speech detected or recognition timed out. Please click 'Start Listening' and speak into your microphone.",
                     is_error=True
                 )
-                self._gui_speak("I didn't catch that. Could you please repeat?")
                 return
 
             # Display recognized speech in GUI

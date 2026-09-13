@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In / Register - Sanwad{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+{% endblock %}
+
+{% block body_class %}auth-body{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <!-- Ambient Backdrop Effects -->
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+
+    <main class="auth-card">
+        <!-- Top Controls: Theme Toggle Only -->
+        <div class="auth-card-topbar">
+            <button type="button" class="btn-theme-pill" onclick="toggleGlobalTheme()" title="Switch Theme (Light / Dark)" aria-label="Switch Theme">
+                <span class="theme-icon-wrap" id="theme-toggle-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                </span>
+            </button>
+        </div>
+
+        <!-- Header / Branding -->
+        <div class="auth-brand">
+            <div class="brand-badge">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+            </div>
+            <h1>Sanwad</h1>
+            <p class="brand-subtitle">Real-Time Chat Application</p>
+        </div>
+
+        <!-- Mode Toggle Tabs -->
+        <div class="auth-tabs">
+            <button type="button" class="tab-btn {% if mode == 'login' %}active{% endif %}" id="tab-login" onclick="switchTab('login')">Sign In</button>
+            <button type="button" class="tab-btn {% if mode == 'register' %}active{% endif %}" id="tab-register" onclick="switchTab('register')">Register</button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="form-login" class="auth-form {% if mode != 'login' %}hidden{% endif %}" action="{{ url_for('auth.login') }}" method="POST">
+            <div class="form-group">
+                <label for="login-username">Username</label>
+                <div class="input-with-icon">
+                    <span class="field-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </span>
+                    <input type="text" id="login-username" name="username" placeholder="e.g. alex_smith" required autocomplete="username" value="{{ username or '' }}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="login-password">Password</label>
+                <div class="input-with-icon">
+                    <span class="field-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                    </span>
+                    <input type="password" id="login-password" name="password" placeholder="Enter your password" required autocomplete="current-password">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">
+                <span>Sign In to Sanwad</span>
+                <span class="btn-arrow">→</span>
+            </button>
+        </form>
+
+        <!-- Register Form -->
+        <form id="form-register" class="auth-form {% if mode != 'register' %}hidden{% endif %}" action="{{ url_for('auth.register') }}" method="POST">
+            <div class="form-group">
+                <label for="reg-username">Username</label>
+                <div class="input-with-icon">
+                    <span class="field-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </span>
+                    <input type="text" id="reg-username" name="username" placeholder="3-25 characters (letters, numbers, _)" required autocomplete="username" minlength="3" maxlength="25">
+                </div>
+                <small class="helper-text">Allowed: letters, numbers, hyphens, and underscores.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="reg-password">Password</label>
+                <div class="input-with-icon">
+                    <span class="field-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                    </span>
+                    <input type="password" id="reg-password" name="password" placeholder="Minimum 6 characters" required autocomplete="new-password" minlength="6">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="reg-confirm">Confirm Password</label>
+                <div class="input-with-icon">
+                    <span class="field-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 2l-2 2m-1.5 1.5L14 9l-1.5-1.5L11 9l-1.5-1.5L8 9l-1.5-1.5L2 12a5 5 0 1 0 7 7l4.5-4.5"></path>
+                        </svg>
+                    </span>
+                    <input type="password" id="reg-confirm" name="confirm_password" placeholder="Re-enter password" required autocomplete="new-password" minlength="6">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">
+                <span>Create Account</span>
+                <span class="btn-arrow">→</span>
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Floating Toast Container outside the card (Messages slide from left and exit to right) -->
+<div id="toast-container" class="toast-container" aria-live="polite">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="toast-message toast-{{ category }}" data-auto-dismiss="5000">
+                    <span class="toast-icon">
+                        {% if category == 'danger' or category == 'error' %}
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                        {% elif category == 'success' %}
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                        {% else %}
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                        {% endif %}
+                    </span>
+                    <span class="toast-body">{{ message }}</span>
+                    <button type="button" class="toast-close" aria-label="Close" onclick="dismissToastElement(this.closest('.toast-message'))">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+{% endblock %}
+
