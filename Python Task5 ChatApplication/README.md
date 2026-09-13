@@ -119,7 +119,6 @@ Python Task5 ChatApplication/
 ├── requirements.txt            # Python dependencies
 ├── README.md                   # Comprehensive project documentation
 ├── .gitignore                  # Git ignore rules
-├── generate_screenshots.py     # Script to render visual UI documentation assets
 │
 ├── database/
 │   ├── __init__.py
