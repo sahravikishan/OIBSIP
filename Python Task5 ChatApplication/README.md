@@ -10,22 +10,74 @@
 ---
 
 ## 1. Project Title
-**Sanwad: Advanced Multi-Room Real-Time Chat Workspace**  
+**Sanwad: Advanced Multi-Room & Personal Real-Time Chat Workspace**  
 *(OIBSIP Python Programming Internship – Task 5: Chat Application)*
 
 ---
 
 ## 2. Project Overview
-Sanwad is an independently architected, production-structured real-time web chat application engineered in Python. It replaces outdated terminal chat scripts with a modern web-based graphical user interface (GUI), bidirectional WebSocket communication powered by Flask-SocketIO, and persistent relational data storage backed by SQLite3. Sanwad enables multiple users to register securely, authenticate via salted password hashes, join or create distinct topical chat rooms, exchange instant messages with emoji shortcodes, view persistent message histories across server restarts, and receive desktop notifications when the chat tab is unfocused.
+Sanwad is an independently architected, production-structured real-time web chat application engineered in Python. It replaces outdated terminal chat scripts with a modern web-based graphical user interface (GUI), bidirectional WebSocket communication powered by Flask-SocketIO, and persistent relational data storage backed by SQLite3. Sanwad enables multiple users to register securely, authenticate via salted password hashes, join or create distinct topical chat rooms, connect in 1-on-1 personal private chats, exchange instant messages with emoji shortcodes, toggle dynamically between Nordic Pine (Dark) and Fresh Mint (Light) themes, view persistent message histories across server restarts, and receive desktop notifications when the chat tab is unfocused.
 
 ---
 
-## 3. Objective
+## 3. UI Previews & Screenshots (Light & Dark Mode)
+
+### 📸 Application Interface Previews
+
+#### 1. Group Room Chat
+| Dark Mode (Nordic Pine) | Light Mode (Fresh Mint) |
+| :---: | :---: |
+| ![Group Room Chat Dark](screenshots/Room_chat_dark_mode.png) | ![Group Room Chat Light](screenshots/Room_chat_light_mode.png) |
+
+#### 2. 1-on-1 Personal Private Chat
+| Dark Mode (Nordic Pine) | Light Mode (Fresh Mint) |
+| :---: | :---: |
+| ![Personal Chat Dark](screenshots/Personal_chat_dark_mode.png) | ![Personal Chat Light](screenshots/Personal_chat_light_mode.png) |
+
+#### 3. User Authentication: Sign In
+| Dark Mode (Nordic Pine) | Light Mode (Fresh Mint) |
+| :---: | :---: |
+| ![Sign In Dark](screenshots/Singup_page_dark_mode.png) | ![Sign In Light](screenshots/Singup_page_light_mode.png) |
+
+#### 4. User Authentication: Registration
+| Dark Mode (Nordic Pine) | Light Mode (Fresh Mint) |
+| :---: | :---: |
+| ![Registration Dark](screenshots/Register_page_dark_mode.png) | ![Registration Light](screenshots/Register_page_light_mode.png) |
+
+---
+
+### 📝 Screenshot Capture Prompts
+
+Use the following exact prompts to reproduce or capture UI screenshots for both Light and Dark modes:
+
+#### 🌙 Prompt 1: Dark Mode Chat Screenshot Capture
+```text
+Navigate to http://127.0.0.1:5000 in your web browser.
+1. Sign in or register with username 'Alice' and password 'password123'.
+2. Select any room (e.g., '#Projects') or switch to 'Personal Chat' mode to select a direct contact.
+3. Ensure Dark Mode is active (default Nordic Pine theme with dark slate background #0b141a / #111b21 and emerald green accents #00a884; toggle via the circular Sun/Moon icon in the top header if currently in light mode).
+4. Verify the active participant counter, 12-hour AM/PM timestamps, and floating composer.
+5. Capture a high-resolution, full-window screenshot of the active interface and save it in screenshots/.
+```
+
+#### ☀️ Prompt 2: Light Mode Chat Screenshot Capture
+```text
+Navigate to http://127.0.0.1:5000 in your web browser.
+1. Sign in or register with username 'Alice' and password 'password123'.
+2. Select any room (e.g., '#Projects') or switch to 'Personal Chat' mode to select a direct contact.
+3. Switch to Light Mode by clicking the circular Sun/Moon theme toggle button in the top navigation header (verify clean light background #f0f2f5 / #ffffff and fresh mint accents).
+4. Confirm that the message composer, chat bubbles, sidebar, and 12-hour AM/PM timestamps display with high contrast and sharp typography.
+5. Capture a high-resolution, full-window screenshot of the active interface and save it in screenshots/.
+```
+
+---
+
+## 4. Objective
 The objective of this project is to satisfy 100% of both **Beginner** and **Advanced** requirements specified for the OIBSIP Chat Application task, demonstrating sound software engineering, robust database design, WebSocket protocol handling, input validation, and security/privacy transparency without relying on boilerplate templates or copied repositories.
 
 ---
 
-## 4. Features Summary
+## 5. Features Summary
 
 | Requirement Tier | Capability | Implementation Status |
 | :--- | :--- | :--- |
@@ -38,7 +90,8 @@ The objective of this project is to satisfy 100% of both **Beginner** and **Adva
 | **Advanced** | GUI Chat Application | **Implemented** (Responsive HTML5/CSS3/JavaScript interface) |
 | **Advanced** | User Registration & Login | **Implemented** (PBKDF2-HMAC-SHA256 password hashing + session management) |
 | **Advanced** | SQLite Authentication & Data Storage | **Implemented** (Users, Rooms, and Messages relational schema) |
-| **Advanced** | Multiple Chat Rooms | **Implemented** (Dedicated channels: General, Python Lounge, Projects, Random) |
+| **Advanced** | Multiple Chat Rooms & 1-on-1 Personal Chat | **Implemented** (Dedicated channels & isolated 1-on-1 direct messaging) |
+| **Advanced** | Light / Dark Theme Switching | **Implemented** (Nordic Pine Dark & Fresh Mint Light with persistent preference) |
 | **Advanced** | Room Creation & Joining | **Implemented** (Dynamic room creation modal and live room switching) |
 | **Advanced** | Persistent Message History | **Implemented** (History survives server restarts, queries via SQLite) |
 | **Advanced** | Desktop / In-App Notifications | **Implemented** (HTML5 Web Notifications API + Page Visibility API) |
@@ -47,28 +100,30 @@ The objective of this project is to satisfy 100% of both **Beginner** and **Adva
 
 ---
 
-## 5. Beginner Features
+## 6. Beginner Features
 1. **Dedicated Server Script (`app.py`)**: Launches a multi-threaded Flask-SocketIO server that listens on `127.0.0.1:5000` to manage incoming WebSocket connections.
 2. **Standard Client Architecture**: Standard web clients connect directly via `socket.io-client` over standard WebSockets (falling back to HTTP long-polling if necessary).
 3. **True Bidirectional Messaging**: Connected peers exchange messages instantly without manual page refreshes or short-polling timers.
-4. **Timestamped Records**: Every message records author identity and server timestamp, formatted cleanly as `[hh:mm AM/PM]`.
+4. **Timestamped Records**: Every message records author identity and server timestamp, formatted cleanly in 12-hour format as `[hh:mm AM/PM]`.
 5. **Graceful Disconnection**: The server listens for socket disconnect events, cleans up memory, and alerts remaining room occupants with `"{Username} has left the room."` without crashing.
 6. **Localhost Execution**: Simple, single-command startup locally on `http://127.0.0.1:5000`.
 
 ---
 
-## 6. Advanced Features
-1. **Bespoke Graphical User Interface**: A responsive dark-slate interface featuring an active participant counter, collapsible room navigation sidebar, avatar badges, system notice pills, and interactive modals.
-2. **Cryptographic Authentication**: PBKDF2-HMAC-SHA256 password hashing with 16-byte random salts via Werkzeug; rejects plain-text passwords, prevents duplicate usernames, and manages session cookies.
-3. **Multi-Room Channel Isolation**: Socket.IO rooms segregate traffic so messages sent to `#General` never leak into `#Python Lounge`.
-4. **Persistent SQLite Store**: Database schema records all messages, rooms, and users. Messages survive complete application and server restarts.
-5. **Smart Tab-Focus Notifications**: Detects when the user has minimized or switched tabs using the HTML5 Page Visibility API and fires browser desktop notifications with audio chimes.
-6. **Emoji Shortcode Engine**: Automatic regex translation of shortcodes (`:smile:` -> 😄, `:heart:` -> ❤️, `:fire:` -> 🔥) with an intuitive popover picker and safe fallback for unrecognized shortcodes.
-7. **Security Transparency Dashboard**: In-app modal and documentation explicitly explaining data storage mechanisms and encryption boundaries.
+## 7. Advanced Features
+1. **Bespoke Graphical User Interface**: A responsive interface featuring dual Group Rooms and Personal Chat modes, active participant counter, collapsible sidebar, avatar badges, and interactive modals.
+2. **Dual Theme Engine (Dark & Light)**: Dynamic toggle between Nordic Pine (Dark) and Fresh Mint (Light) themes with instant transitions, smooth contrast, and `localStorage` persistence.
+3. **1-on-1 Personal Chat**: Private direct messaging between individual users isolated from group rooms.
+4. **Cryptographic Authentication**: PBKDF2-HMAC-SHA256 password hashing with 16-byte random salts via Werkzeug; rejects plain-text passwords, prevents duplicate usernames, and manages session cookies.
+5. **Multi-Room Channel Isolation**: Socket.IO rooms segregate traffic so messages sent to `#General` never leak into `#Python Lounge` or private DM channels.
+6. **Persistent SQLite Store**: Database schema records all messages, rooms, and users. Messages survive complete application and server restarts.
+7. **Smart Tab-Focus Notifications**: Detects when the user has minimized or switched tabs using the HTML5 Page Visibility API and fires browser desktop notifications with audio chimes.
+8. **Emoji Shortcode Engine**: Automatic regex translation of shortcodes (`:smile:` -> 😄, `:heart:` -> ❤️, `:fire:` -> 🔥) with an intuitive popover picker and safe fallback for unrecognized shortcodes.
+9. **Security Transparency Dashboard**: In-app modal and documentation explicitly explaining data storage mechanisms and encryption boundaries.
 
 ---
 
-## 7. Technology Stack
+## 8. Technology Stack
 - **Backend**: Python 3.13
 - **Web Framework**: Flask 3.1.1
 - **Real-Time Engine**: Flask-SocketIO 5.6.1 (with `simple-websocket` & `threading` mode)
@@ -76,50 +131,7 @@ The objective of this project is to satisfy 100% of both **Beginner** and **Adva
 - **Password Security**: Werkzeug Security (`pbkdf2:sha256`)
 - **Frontend Core**: Semantic HTML5, Vanilla JavaScript (ES6+), CSS3 (Flexbox & CSS Grid)
 - **Fonts & Typography**: Google Fonts (*Plus Jakarta Sans*, *JetBrains Mono*)
-- **Testing**: `pytest 9.1.1` automated test suite
-
----
-
-## 8. Architecture
-
-```
-                                  BROWSER CLIENT
-                    ┌────────────────────────────────────────┐
-                    │  HTML5 GUI  +  CSS3  +  JavaScript     │
-                    │  - Socket.IO Client                    │
-                    │  - HTML5 Web Notification API          │
-                    │  - Page Visibility API (Focus Tracker) │
-                    └──────────────────┬─────────────────────┘
-                                       │
-                      HTTP / WS Handshake & Real-Time Events
-                                       │
-                                       ▼
-                             FLASK-SOCKETIO SERVER
-                    ┌────────────────────────────────────────┐
-                    │ app.py (Application Entry Point)       │
-                    │ ├── Blueprints (HTTP API)              │
-                    │ │   ├── auth_routes.py (/login, /reg)  │
-                    │ │   └── chat_routes.py (/chat, /rooms) │
-                    │ └── Sockets (Event Handlers)           │
-                    │     └── events.py                      │
-                    │         ├── join_chat_room             │
-                    │         ├── send_message               │
-                    │         ├── typing                     │
-                    │         └── disconnect                 │
-                    └──────────────────┬─────────────────────┘
-                                       │
-                         Parameterized SQLite Queries (?)
-                                       │
-                                       ▼
-                              SQLITE3 DATABASE
-                    ┌────────────────────────────────────────┐
-                    │ database/chat.db                       │
-                    │ ├── users (id, username, password_hash)│
-                    │ ├── rooms (id, name, desc, is_default) │
-                    │ └── messages (id, room_id, user_id,    │
-                    │               content, created_at)     │
-                    └────────────────────────────────────────┘
-```
+- **Testing**: `pytest 9.1.1` automated test suite (19 test cases)
 
 ---
 
@@ -172,8 +184,14 @@ Python Task5 ChatApplication/
 │   └── chat.html               # Main real-time chat application interface
 │
 ├── screenshots/
-│   ├── login_screen.png        # UI preview of login/registration
-│   └── chat_screen.png         # UI preview of real-time multi-room chat
+│   ├── Room_chat_dark_mode.png       # Group chat interface in Dark Mode
+│   ├── Room_chat_light_mode.png      # Group chat interface in Light Mode
+│   ├── Personal_chat_dark_mode.png   # 1-on-1 personal private chat in Dark Mode
+│   ├── Personal_chat_light_mode.png  # 1-on-1 personal private chat in Light Mode
+│   ├── Singup_page_dark_mode.png     # Sign In authentication in Dark Mode
+│   ├── Singup_page_light_mode.png    # Sign In authentication in Light Mode
+│   ├── Register_page_dark_mode.png   # User registration in Dark Mode
+│   └── Register_page_light_mode.png  # User registration in Light Mode
 │
 └── tests/
     ├── __init__.py
@@ -329,12 +347,14 @@ http://localhost:5000
 
 ---
 
-## 19. How to Create and Join Rooms
-- **Joining an Existing Room**: Click any room in the sidebar (e.g. `# General`, `# Python Lounge`). The client signals the server to leave the previous channel and subscribe to the new one, loading that room's message history.
+## 19. How to Use Group Chat & Personal/Private Chat
+- **Switching Between Modes**: Click the **Chat Rooms** or **Personal Chat** toggle buttons at the top of the sidebar.
+- **Joining an Existing Room**: In Chat Rooms mode, click any room in the sidebar (e.g. `# General`, `# Python Lounge`). The client signals the server to leave the previous channel and subscribe to the new one, loading that room's message history.
 - **Creating a New Room**:
   1. Click the **`+`** button next to *CHAT ROOMS* in the sidebar.
   2. Enter a room name (e.g. `Algorithms`) and an optional description.
   3. Click **Create Room**. The room is written to SQLite and immediately becomes available to all connected participants.
+- **Personal 1-on-1 Chat**: In Personal Chat mode, click on any registered user from the contact list to open an isolated private conversation.
 
 ---
 
@@ -427,17 +447,7 @@ Sanwad natively supports emoji shortcodes. Users can type shortcodes directly or
 
 ---
 
-## 29. Screenshots
-
-### 1. Authentication Screen (Sign In / Register)
-![Login & Registration](screenshots/login_screen.png)
-
-### 2. Main Real-Time Multi-Room Chat Interface
-![Real-Time Chat Interface](screenshots/chat_screen.png)
-
----
-
-## 30. Testing & Verification
+## 29. Testing & Verification
 
 ### Automated Test Suite
 Sanwad includes an automated test suite implemented with `pytest` covering all beginner and advanced requirements:
@@ -449,31 +459,36 @@ python -m pytest -v
 ### Test Suite Results:
 ```text
 ============================= test session starts =============================
-collected 17 items
+collected 19 items
 
 tests/test_auth.py::test_password_hashing PASSED                         [  5%]
-tests/test_auth.py::test_username_validation PASSED                      [ 11%]
-tests/test_auth.py::test_registration_and_duplicate_rejection PASSED     [ 17%]
-tests/test_auth.py::test_login_flow PASSED                               [ 23%]
-tests/test_auth.py::test_unauthenticated_chat_redirect PASSED            [ 29%]
-tests/test_db.py::test_default_rooms_seeded PASSED                       [ 35%]
-tests/test_db.py::test_create_custom_room_and_duplicates PASSED          [ 41%]
-tests/test_db.py::test_message_persistence_across_connections PASSED     [ 47%]
-tests/test_sockets.py::test_unauthenticated_socket_connection_rejected PASSED [ 52%]
-tests/test_sockets.py::test_authenticated_socket_flow_and_two_way_messaging PASSED [ 58%]
-tests/test_sockets.py::test_room_message_isolation PASSED                [ 64%]
-tests/test_sockets.py::test_emoji_shortcodes_and_unknown_handling PASSED [ 70%]
-tests/test_validation_and_security.py::test_empty_and_whitespace_message_validation PASSED [ 76%]
-tests/test_validation_and_security.py::test_excessively_long_message_validation PASSED [ 82%]
-tests/test_validation_and_security.py::test_room_name_validation PASSED  [ 88%]
+tests/test_auth.py::test_username_validation PASSED                      [ 10%]
+tests/test_auth.py::test_registration_and_duplicate_rejection PASSED     [ 15%]
+tests/test_auth.py::test_login_flow PASSED                               [ 21%]
+tests/test_auth.py::test_unauthenticated_chat_redirect PASSED            [ 26%]
+tests/test_db.py::test_default_rooms_seeded PASSED                       [ 31%]
+tests/test_db.py::test_create_custom_room_and_duplicates PASSED          [ 36%]
+tests/test_db.py::test_message_persistence_across_connections PASSED     [ 42%]
+tests/test_db.py::test_direct_messaging_and_isolation PASSED             [ 47%]
+tests/test_db.py::test_passcode_protected_rooms PASSED                   [ 52%]
+tests/test_sockets.py::test_unauthenticated_socket_connection_rejected PASSED [ 57%]
+tests/test_sockets.py::test_authenticated_socket_flow_and_two_way_messaging PASSED [ 63%]
+tests/test_sockets.py::test_room_message_isolation PASSED                [ 68%]
+tests/test_sockets.py::test_emoji_shortcodes_and_unknown_handling PASSED [ 73%]
+tests/test_validation_and_security.py::test_empty_and_whitespace_message_validation PASSED [ 78%]
+tests/test_validation_and_security.py::test_excessively_long_message_validation PASSED [ 84%]
+tests/test_validation_and_security.py::test_room_name_validation PASSED  [ 89%]
 tests/test_validation_and_security.py::test_xss_content_safety PASSED    [ 94%]
 tests/test_validation_and_security.py::test_socket_send_empty_message_rejected PASSED [100%]
 
-============================= 17 passed in 54.47s =============================
+============================= 19 passed in 55.12s =============================
 ```
 
 ### Manual Verification Checklist:
 - [x] **Two-Browser Multi-User Test**: Open two different browser tabs (e.g. Regular Chrome and Incognito/Edge), register Alice and Bob, join `#General`, and verify instant real-time message exchange.
+- [x] **Group Rooms vs. Personal Chat**: Toggle between Chat Rooms and Personal Chat; verify 1-on-1 private messaging works exclusively between selected users.
+- [x] **Dark & Light Theme Switching**: Toggle between Nordic Pine (Dark) and Fresh Mint (Light) themes; verify instant palette transitions, clean contrast, and preference persistence.
+- [x] **12-Hour AM/PM Timestamps**: Verify all message bubbles and system notices format time cleanly as `[hh:mm AM/PM]`.
 - [x] **Room Channel Isolation**: Switch Bob to `#Python Lounge` and verify Alice's messages in `#General` do not appear in Bob's view.
 - [x] **Server Restart History Test**: Stop `app.py`, restart it, and refresh the browser; all previous messages reappear.
 - [x] **Desktop Notification Test**: Switch tabs while connected as Bob; send a message from Alice; verify desktop notification pops up.
@@ -482,19 +497,19 @@ tests/test_validation_and_security.py::test_socket_send_empty_message_rejected P
 
 ---
 
-## 31. Known Limitations
+## 30. Known Limitations
 - **SQLite Concurrency**: SQLite in WAL mode performs well for hundreds of concurrent local users, but a distributed production deployment would benefit from PostgreSQL and Redis message queuing.
 - **Attachment Uploads**: Currently limited to text and emojis; media file uploads (images/videos) are not implemented.
 - **End-to-End Encryption**: As transparently documented, messages are stored plaintext in SQLite on the server.
 
 ---
 
-## 32. Future Improvements
-1. **Direct 1-on-1 Direct Messaging (DMs)** alongside multi-user rooms.
-2. **File & Image Attachments** with thumbnail generation and virus scanning.
-3. **Signal Protocol End-to-End Encryption (E2EE)** for client-to-client cryptographic confidentiality.
-4. **Message Reactions**: Adding interactive emoji reactions to specific message IDs.
-5. **Read Receipts**: Double checkmarks indicating message delivery and read status.
+## 31. Future Improvements
+1. **File & Image Attachments** with thumbnail generation and virus scanning.
+2. **Signal Protocol End-to-End Encryption (E2EE)** for client-to-client cryptographic confidentiality.
+3. **Message Reactions**: Adding interactive emoji reactions to specific message IDs.
+4. **Read Receipts**: Double checkmarks indicating message delivery and read status.
+5. **Voice / Video Calling**: WebRTC peer-to-peer audio and video communication.
 
 ---
 
