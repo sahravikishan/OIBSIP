@@ -1,5 +1,5 @@
 """
-Weather GUI module - Tkinter-based graphical interface for the SkyCast weather app.
+Weather GUI module - Tkinter-based graphical interface for the HawamanJankari weather app.
 Provides city search, current conditions, hourly and 5-day forecast display,
 dark/light theme switching, and animated weather background effects.
 """
@@ -114,7 +114,7 @@ THEMES: Dict[str, Dict[str, str]] = {
 class WeatherAppGUI:
     def __init__(self, root: tk.Tk):
         self.root = root
-        self.root.title("SkyCast - Real-Time Weather Application")
+        self.root.title("HawamanJankari - Real-Time Weather Application")
         self.root.geometry("860x780")
         self.root.minsize(780, 560)
 
@@ -410,7 +410,7 @@ class WeatherAppGUI:
 
         self.title_lbl = tk.Label(
             self.title_row,
-            text="SkyCast Weather",
+            text="HawamanJankari",
             font=("Segoe UI", 20, "bold"),
             fg=self.t["text_main"],
             bg=self.t["bg"],
@@ -929,7 +929,7 @@ class WeatherAppGUI:
 
         self.version_lbl = tk.Label(
             self.footer_frame,
-            text="SkyCast Weather",
+            text="HawamanJankari",
             font=("Segoe UI", 8, "bold"),
             fg=self.t["accent"],
             bg=self.t["bg"]

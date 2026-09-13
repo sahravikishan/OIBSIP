@@ -1,4 +1,4 @@
-# SkyCast - Real-Time Weather Application
+# HawamanJankari - Real-Time Weather Application
 
 A Python Weather Application developed for Oasis Infobyte (OIBSIP) Task 4, providing both a Beginner Tier Command-Line Interface (CLI) and an Advanced Tier Graphical User Interface (GUI) built with Tkinter, Pillow, and the OpenWeatherMap API.
 
@@ -6,7 +6,7 @@ A Python Weather Application developed for Oasis Infobyte (OIBSIP) Task 4, provi
 
 ## Project Overview
 
-SkyCast retrieves real-time meteorological observations and 5-day forecast data from OpenWeatherMap. The application provides two operating modes:
+HawamanJankari retrieves real-time meteorological observations and 5-day forecast data from OpenWeatherMap. The application provides two operating modes:
 - A command-line interface supporting interactive querying and direct argument lookup.
 - A desktop graphical user interface with responsive threading, metric displays, unit toggling, and local configuration persistence.
 
@@ -95,7 +95,7 @@ pip install -r requirements.txt
 
 ## API Key Configuration
 
-SkyCast uses the free tier of the OpenWeatherMap API.
+HawamanJankari uses the free tier of the OpenWeatherMap API.
 
 1. Create a free account at [OpenWeatherMap](https://openweathermap.org/users/sign_up).
 2. Generate an API key from your account dashboard.
@@ -192,10 +192,10 @@ python weather_cli.py "Bangalore"
 ## Screenshots
 
 ### Light Mode Interface
-![SkyCast Weather - Light Mode](screenshots/screenshot_light_mode.png)
+![HawamanJankari - Light Mode](screenshots/screenshot_light_mode.png)
 
 ### Dark Mode Interface
-![SkyCast Weather - Dark Mode](screenshots/screenshot_dark_mode.png)
+![HawamanJankari - Dark Mode](screenshots/screenshot_dark_mode.png)
 
 ---
 
