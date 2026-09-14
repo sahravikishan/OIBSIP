@@ -1,17 +1,17 @@
-# Advanced BMI Calculator & Health Tracker (OIBSIP Task 2)
+# Advanced Human BMI Calculator & Health Tracker (OIBSIP Task 2)
 
-A modular, desktop Graphical User Interface (GUI) application developed in Python for the **Oasis Infobyte (OIBSIP) Python Programming Internship – Task 2: BMI Calculator (Advanced Level)**.
+A modular, desktop Graphical User Interface (GUI) application developed in Python for the **Oasis Infobyte (OIBSIP) Python Programming Internship – Task 2: Human BMI Calculator (Advanced Level)**.
 
 ---
 
 ## 1. Project Title
-**Advanced BMI Calculator & Health Tracker**  
+**Advanced Human BMI Calculator & Health Tracker**  
 *OIBSIP Python Programming Internship — Task 2 (Advanced Edition)*
 
 ---
 
 ## 2. Project Overview
-The **Advanced BMI Calculator** is an independently engineered desktop application built with Python, Tkinter, SQLite3, and Matplotlib. It enables individuals and healthcare practitioners to calculate Body Mass Index (BMI), track historical measurements across multiple isolated user profiles, and visualize longitudinal health trends over time against World Health Organization (WHO) benchmarks.
+The **Advanced Human BMI Calculator** is an independently engineered desktop application built with Python, Tkinter, SQLite3, and Matplotlib. It enables individuals and healthcare practitioners to calculate Body Mass Index (BMI), track historical measurements across multiple isolated user profiles, and visualize longitudinal health trends over time against World Health Organization (WHO) benchmarks.
 
 ### Application Screenshots
 

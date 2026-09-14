@@ -31,7 +31,7 @@ class BMICalculatorApp:
 
     def __init__(self, root: tk.Tk, db_manager: Optional[DatabaseManager] = None):
         self.root = root
-        self.root.title("BMI Calculator & Health Tracker — OIBSIP Task 2")
+        self.root.title("Human BMI Calculator & Health Tracker — OIBSIP Task 2")
         self.root.geometry("1020x680")
         self.root.minsize(920, 600)
 
@@ -124,7 +124,7 @@ class BMICalculatorApp:
 
         title_lbl = tk.Label(
             header_frame,
-            text="BMI CALCULATOR & HEALTH TRACKER",
+            text="HUMAN BMI CALCULATOR & HEALTH TRACKER",
             font=("Segoe UI", 15, "bold"),
             fg="#FFFFFF",
             bg="#0D47A1",

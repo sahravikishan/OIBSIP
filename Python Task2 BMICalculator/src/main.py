@@ -1,5 +1,5 @@
 """
-Main Application Launcher for BMI Calculator & Health Tracker.
+Main Application Launcher for Human BMI Calculator & Health Tracker.
 
 Oasis Infobyte (OIBSIP) Python Programming Internship - Task 2 (Advanced).
 """

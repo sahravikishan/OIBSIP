@@ -1,5 +1,5 @@
 """
-Project Root Application Launcher for BMI Calculator & Health Tracker.
+Project Root Application Launcher for Human BMI Calculator & Health Tracker.
 
 Allows starting the application directly via `python main.py` as well as `python src/main.py`.
 """
