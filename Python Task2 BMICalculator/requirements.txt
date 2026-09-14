@@ -1,0 +1,4 @@
+# Dependencies for Advanced BMI Calculator (OIBSIP Python Task 2)
+# Standard library modules (tkinter, sqlite3, unittest) are included with standard Python.
+
+matplotlib>=3.5.0

@@ -1,0 +1,20 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# SQLite Database files (keep tracked schemas clean; default db is auto-created on run)
+database/bmi_records.db
+*.db
+*.sqlite3
+
+# Environment and IDE files
+.venv/
+env/
+venv/
+.idea/
+.vscode/
+*.swp
+
+# Testing and temporary files
+.pytest_cache/
