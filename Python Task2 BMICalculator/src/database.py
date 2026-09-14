@@ -20,25 +20,28 @@ class DatabaseError(Exception):
 class DatabaseManager:
     """
     Manages SQLite connections and CRUD operations for users and BMI history.
+    Guarantees true persistent storage anchored to the project directory.
     """
 
     def __init__(self, db_path: Optional[str] = None):
         """
         Initialize the database manager.
-        If db_path is not provided, defaults to 'database/bmi_records.db' relative to project root.
+        If db_path is not provided, defaults to an absolute path inside the project's
+        'database/' folder, ensuring persistence across restarts and working directories.
         """
         if db_path is None:
-            # Default database location in database/ folder
-            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            # Stable absolute path anchored to project directory
+            base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
             db_dir = os.path.join(base_dir, "database")
             os.makedirs(db_dir, exist_ok=True)
-            self.db_path = os.path.join(db_dir, "bmi_records.db")
+            self.db_path = os.path.abspath(os.path.join(db_dir, "bmi_records.db"))
         else:
-            self.db_path = db_path
+            self.db_path = os.path.abspath(db_path)
             parent = os.path.dirname(self.db_path)
             if parent:
                 os.makedirs(parent, exist_ok=True)
 
+        print(f"[SQLite Database] Persistent database location: {self.db_path}")
         self._init_database()
 
     @contextmanager
@@ -62,6 +65,7 @@ class DatabaseManager:
     def _init_database(self) -> None:
         """
         Create tables and indexes if they do not already exist.
+        DOES NOT delete or drop existing tables or records.
         """
         create_users_table = """
         CREATE TABLE IF NOT EXISTS users (
@@ -108,7 +112,7 @@ class DatabaseManager:
 
         with self._connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT id FROM users WHERE name = ?;", (cleaned_name,))
+            cursor.execute("SELECT id FROM users WHERE name = ? COLLATE NOCASE;", (cleaned_name,))
             row = cursor.fetchone()
             if row:
                 return int(row["id"]), False
@@ -120,6 +124,23 @@ class DatabaseManager:
             )
             conn.commit()
             return int(cursor.lastrowid), True
+
+    def get_user_by_name(self, name: str) -> Optional[Dict[str, Any]]:
+        """
+        Retrieve user dictionary by name (case-insensitive) if they exist.
+        Does NOT create a new user.
+        """
+        cleaned_name = name.strip()
+        if not cleaned_name:
+            return None
+
+        with self._connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT id, name, created_at FROM users WHERE name = ? COLLATE NOCASE;", (cleaned_name,))
+            row = cursor.fetchone()
+            if row:
+                return {"id": int(row["id"]), "name": row["name"], "created_at": row["created_at"]}
+            return None
 
     def get_all_users(self) -> List[Dict[str, Any]]:
         """
@@ -142,6 +163,7 @@ class DatabaseManager:
     ) -> int:
         """
         Insert a new BMI measurement record for the given user.
+        Commits transaction to disk immediately.
 
         Returns:
             int: Inserted record ID.
@@ -161,7 +183,7 @@ class DatabaseManager:
 
     def get_user_records(self, user_id: int, order_desc: bool = True) -> List[Dict[str, Any]]:
         """
-        Retrieve all BMI records for a specific user.
+        Retrieve all BMI records for a specific user from SQLite.
 
         Args:
             user_id: Target user's primary key ID.

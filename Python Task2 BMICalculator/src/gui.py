@@ -3,7 +3,7 @@ Desktop GUI Module for BMI Calculator.
 
 Implements a professional Tkinter/ttk desktop user interface with side-by-side
 input/result panels, interactive SQLite history Treeview, and embedded Matplotlib
-trend charts.
+trend line charts.
 """
 
 import tkinter as tk
@@ -35,9 +35,10 @@ class BMICalculatorApp:
         self.root.geometry("1020x680")
         self.root.minsize(920, 600)
 
-        # Database manager initialization
+        # Database manager initialization (persistent SQLite file)
         try:
             self.db = db_manager if db_manager else DatabaseManager()
+            print(f"[GUI] Active persistent SQLite storage: {self.db.db_path}")
         except DatabaseError as e:
             messagebox.showerror("Database Error", f"Failed to initialize database:\n{e}")
             self.db = None
@@ -51,13 +52,12 @@ class BMICalculatorApp:
         # Build interface layout
         self._build_ui()
 
-        # Populate user dropdown
+        # Populate user dropdown and load active user history
         self._refresh_users_list()
 
     def _setup_styles(self) -> None:
         """Configure ttk theme and custom widget styles."""
         self.style = ttk.Style()
-        # Use 'clam' or standard theme for consistent cross-platform styling
         available_themes = self.style.theme_names()
         if "clam" in available_themes:
             self.style.theme_use("clam")
@@ -144,7 +144,7 @@ class BMICalculatorApp:
         content_frame = tk.Frame(self.root, bg=self.bg_color)
         content_frame.pack(fill="both", expand=True, padx=15, pady=12)
 
-        # Left Column: Input Form & Result Card (fixed reasonable width)
+        # Left Column: Input Form & Result Card
         left_pane = tk.Frame(content_frame, bg=self.bg_color, width=380)
         left_pane.pack(side="left", fill="y", padx=(0, 10))
         left_pane.pack_propagate(False)
@@ -165,14 +165,19 @@ class BMICalculatorApp:
         inner = ttk.Frame(input_card, style="Card.TFrame", padding=12)
         inner.pack(fill="both", expand=True)
 
-        # 1. User Name / Selection
+        # 1. User Name / Selection Combobox
         lbl_user = ttk.Label(inner, text="User Name:", font=("Segoe UI", 9, "bold"), background=self.card_bg)
         lbl_user.grid(row=0, column=0, sticky="w", pady=(0, 4))
 
         self.user_var = tk.StringVar()
         self.user_combobox = ttk.Combobox(inner, textvariable=self.user_var, font=("Segoe UI", 10))
         self.user_combobox.grid(row=1, column=0, columnspan=2, sticky="ew", pady=(0, 12))
+
+        # Bind events so typing or selecting immediately syncs the user history
         self.user_combobox.bind("<<ComboboxSelected>>", self._on_user_selected)
+        self.user_combobox.bind("<Return>", self._on_user_selected)
+        self.user_combobox.bind("<FocusOut>", self._on_user_selected)
+        self.user_combobox.bind("<KeyRelease>", self._on_user_typing)
 
         # 2. Weight input (kg)
         lbl_weight = ttk.Label(inner, text="Weight (kg):", font=("Segoe UI", 9, "bold"), background=self.card_bg)
@@ -285,7 +290,7 @@ class BMICalculatorApp:
         container = ttk.Frame(history_card, style="Card.TFrame", padding=10)
         container.pack(fill="both", expand=True)
 
-        # Header with user label and refresh
+        # Header with user label
         top_bar = ttk.Frame(container, style="Card.TFrame")
         top_bar.pack(fill="x", pady=(0, 8))
 
@@ -360,7 +365,7 @@ class BMICalculatorApp:
             toolbar,
             text="Refresh History",
             style="Secondary.TButton",
-            command=self._load_user_history,
+            command=self._handle_refresh_history,
         )
         self.btn_refresh.pack(side="left", padx=6)
 
@@ -368,7 +373,7 @@ class BMICalculatorApp:
             toolbar,
             text="Exit",
             style="Secondary.TButton",
-            command=self.root.quit,
+            command=self.root.destroy,
         )
         self.btn_exit.pack(side="right")
 
@@ -381,35 +386,77 @@ class BMICalculatorApp:
             user_names = [u["name"] for u in users]
             self.user_combobox["values"] = user_names
 
-            if user_names and not self.user_var.get():
-                # Default to first user if available
+            current = self.user_var.get().strip()
+            if not current and user_names:
+                # Default to first user on initial launch
                 self.user_var.set(user_names[0])
+                self._on_user_selected(None)
+            elif current:
                 self._on_user_selected(None)
         except DatabaseError as e:
             messagebox.showerror("Database Error", f"Could not load users list:\n{e}")
 
-    def _on_user_selected(self, _event) -> None:
-        """Handle user selection from combobox."""
+    def _on_user_typing(self, _event=None) -> None:
+        """Dynamically detect when typed text matches an existing user profile."""
+        name = self.user_var.get().strip()
+        if not name or not self.db:
+            return
+        user = self.db.get_user_by_name(name)
+        if user and user["id"] != self.current_user_id:
+            self.current_user_id = user["id"]
+            self.current_user_name = user["name"]
+            self.lbl_history_user.config(text=f"Displaying records for: {user['name']}")
+            self._load_user_history()
+
+    def _on_user_selected(self, _event=None) -> None:
+        """Handle user selection from combobox or input field."""
         selected_name = self.user_var.get().strip()
         if not selected_name:
+            self.current_user_id = None
+            self.current_user_name = ""
+            self.lbl_history_user.config(text="Displaying records for: (No User Selected)")
+            self._clear_history_view()
+            return
+
+        if not self.db:
             return
 
         try:
-            user_id, _ = self.db.get_or_create_user(selected_name)
-            self.current_user_id = user_id
-            self.current_user_name = selected_name
-            self.lbl_history_user.config(text=f"Displaying records for: {selected_name}")
-            self._load_user_history()
+            user = self.db.get_user_by_name(selected_name)
+            if user:
+                self.current_user_id = user["id"]
+                self.current_user_name = user["name"]
+                self.lbl_history_user.config(text=f"Displaying records for: {user['name']}")
+                self._load_user_history()
+            else:
+                self.current_user_id = None
+                self.current_user_name = selected_name
+                self.lbl_history_user.config(
+                    text=f"Displaying records for: {selected_name} (New Profile — No Records Yet)"
+                )
+                self._clear_history_view()
         except DatabaseError as e:
             messagebox.showerror("Database Error", f"Could not load user records:\n{e}")
 
-    def _load_user_history(self) -> None:
-        """Query and display BMI records for the currently active user."""
-        # Clear existing rows
+    def _clear_history_view(self) -> None:
+        """Clear all entries currently visible in the Treeview."""
         for item in self.history_tree.get_children():
             self.history_tree.delete(item)
 
-        if not self.current_user_id or not self.db:
+    def _load_user_history(self) -> None:
+        """Query and display BMI records for the currently active user directly from SQLite."""
+        self._clear_history_view()
+
+        if not self.db:
+            return
+
+        # Ensure user_id is resolved if name is provided
+        if not self.current_user_id and self.current_user_name:
+            user = self.db.get_user_by_name(self.current_user_name)
+            if user:
+                self.current_user_id = user["id"]
+
+        if not self.current_user_id:
             return
 
         try:
@@ -430,6 +477,17 @@ class BMICalculatorApp:
                 )
         except DatabaseError as e:
             messagebox.showerror("Database Error", f"Failed to retrieve history:\n{e}")
+
+    def _handle_refresh_history(self) -> None:
+        """Explicitly refresh user list and reload active history directly from SQLite."""
+        self._refresh_users_list()
+        selected_name = self.user_var.get().strip()
+        if selected_name and self.db:
+            user = self.db.get_user_by_name(selected_name)
+            if user:
+                self.current_user_id = user["id"]
+                self.current_user_name = user["name"]
+        self._load_user_history()
 
     def _handle_calculate_and_save(self) -> None:
         """Validate inputs, calculate BMI, save record to SQLite, and update UI."""
@@ -456,7 +514,7 @@ class BMICalculatorApp:
 
         # Step 3: Database Persistence
         if not self.db:
-            messagebox.showerror("Database Error", "Database service is unavailable. Record cannot be saved.")
+            messagebox.showerror("Database Error", "Unable to save BMI record. Please try again.")
             return
 
         try:
@@ -465,7 +523,7 @@ class BMICalculatorApp:
             self.current_user_name = valid_name
             self.user_var.set(valid_name)
 
-            # Insert measurement record
+            # Insert measurement record and commit to SQLite
             self.db.insert_record(user_id, weight, height, bmi, category)
 
             # Refresh user dropdown list if a new user was created
@@ -474,7 +532,7 @@ class BMICalculatorApp:
                 self.user_var.set(valid_name)
 
         except DatabaseError as e:
-            messagebox.showerror("Database Error", f"Failed to save record to database:\n{e}")
+            messagebox.showerror("Database Error", "Unable to save BMI record. Please try again.")
             return
 
         # Step 4: Update UI Feedback
@@ -530,9 +588,27 @@ class BMICalculatorApp:
 
     def _handle_view_trend_graph(self) -> None:
         """Open a Matplotlib window displaying the selected user's BMI trajectory."""
-        if not self.current_user_id or not self.db:
-            messagebox.showinfo("Trend Graph", "Please select or calculate a record for a user first.")
+        selected_name = self.user_var.get().strip()
+        if not selected_name:
+            messagebox.showinfo("Trend Graph", "Please enter or select a user name first.")
             return
+
+        if not self.db:
+            messagebox.showerror("Database Error", "Database service is unavailable.")
+            return
+
+        # Ensure user is identified in SQLite
+        if not self.current_user_id or self.current_user_name.lower() != selected_name.lower():
+            user = self.db.get_user_by_name(selected_name)
+            if user:
+                self.current_user_id = user["id"]
+                self.current_user_name = user["name"]
+            else:
+                messagebox.showinfo(
+                    "Insufficient Data",
+                    "At least two BMI records are required to display a BMI trend.",
+                )
+                return
 
         try:
             records = self.db.get_user_records(self.current_user_id, order_desc=False)

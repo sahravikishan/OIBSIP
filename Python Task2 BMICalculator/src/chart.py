@@ -1,14 +1,13 @@
 """
 BMI Trend Visualization Module using Matplotlib.
 
-Generates a line chart showing the selected user's BMI trajectory over time
-against standard WHO BMI category thresholds.
+Generates a clean, professional line chart showing the selected user's BMI
+trajectory over time against standard WHO BMI category thresholds.
 """
 
 from typing import List, Dict, Any
 from datetime import datetime
 import matplotlib
-import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 import matplotlib.dates as mdates
 
@@ -74,7 +73,7 @@ def create_trend_figure(user_name: str, records: List[Dict[str, Any]]) -> Figure
     if len(valid_records) < 2:
         raise InsufficientDataError("At least two BMI records are required to display a BMI trend.")
 
-    # Sort chronologically (oldest to newest)
+    # Sort records chronologically (oldest to newest)
     valid_records.sort(key=lambda item: item[0])
     dates = [item[0] for item in valid_records]
     bmis = [item[1] for item in valid_records]
@@ -83,52 +82,96 @@ def create_trend_figure(user_name: str, records: List[Dict[str, Any]]) -> Figure
     fig = Figure(figsize=(7.5, 4.8), dpi=100)
     ax = fig.add_subplot(111)
 
-    # Plot trend line with clear data-point markers
+    # Automatically determine a sensible Y-axis range from actual BMI values.
+    # DO NOT force the Y-axis to start at 10 unless the actual data requires it.
+    min_val = min(bmis)
+    max_val = max(bmis)
+    if min_val == max_val:
+        pad = max(1.5, min_val * 0.15)
+    else:
+        pad = max(1.2, (max_val - min_val) * 0.20)
+
+    y_min = max(0.0, min_val - pad)
+    y_max = max_val + pad
+    ax.set_ylim(y_min, y_max)
+
+    # Plot WHO category boundary reference background regions
+    ax.axhspan(0.0, 18.5, color="#BBDEFB", alpha=0.30, label="Underweight (< 18.5)", zorder=0)
+    ax.axhspan(18.5, 24.9, color="#C8E6C9", alpha=0.30, label="Normal (18.5 – 24.9)", zorder=0)
+    ax.axhspan(25.0, 29.9, color="#FFE0B2", alpha=0.30, label="Overweight (25 – 29.9)", zorder=0)
+    ax.axhspan(30.0, 150.0, color="#FFCDD2", alpha=0.30, label="Obese (≥ 30)", zorder=0)
+
+    # Draw subtle reference lines for category boundaries if within range
+    for boundary, col in [(18.5, "#1565C0"), (24.9, "#2E7D32"), (29.9, "#E65100")]:
+        if y_min < boundary < y_max:
+            ax.axhline(boundary, color=col, linestyle=":", alpha=0.55, linewidth=1.1, zorder=1)
+
+    # Plot line chart with distinct data-point markers (zorder above backgrounds)
     ax.plot(
         dates,
         bmis,
         marker="o",
-        markersize=6.5,
-        linewidth=2.2,
-        color="#1E88E5",
+        markersize=7.0,
+        linewidth=2.4,
+        color="#1565C0",
+        markerfacecolor="#0D47A1",
+        markeredgecolor="#FFFFFF",
+        markeredgewidth=1.5,
         label=f"{user_name}'s BMI",
         zorder=5,
     )
 
-    # Add numeric labels at each data point
-    for dt, val in zip(dates, bmis):
+    # Add legible point annotations for exact BMI values
+    last_dt = None
+    last_val = None
+    for idx, (dt, val) in enumerate(zip(dates, bmis)):
+        is_close_to_prev = (
+            last_dt is not None
+            and (dt - last_dt).total_seconds() < 180
+            and abs(val - last_val) < 2.5
+        )
+        if is_close_to_prev:
+            y_offset = -16 if (idx % 2 != 0) else 10
+            x_offset = -10 if (idx % 2 != 0) else 10
+        else:
+            y_offset = -15 if (y_max - val) < (val - y_min) * 0.25 else 8
+            x_offset = 0
+
         ax.annotate(
             f"{val:.2f}",
             (dt, val),
             textcoords="offset points",
-            xytext=(0, 8),
+            xytext=(x_offset, y_offset),
             ha="center",
             fontsize=8.5,
             fontweight="bold",
-            color="#263238",
+            color="#212121",
+            bbox=dict(boxstyle="round,pad=0.2", facecolor="#FFFFFF", edgecolor="#CFD8DC", alpha=0.9),
             zorder=6,
         )
+        last_dt = dt
+        last_val = val
 
-    # Plot WHO category boundary reference bands
-    min_y = max(10.0, min(bmis) - 3.0)
-    max_y = max(35.0, max(bmis) + 3.0)
-    ax.set_ylim(min_y, max_y)
-
-    # Background color bands for standard WHO reference categories
-    ax.axhspan(0, 18.5, color="#BBDEFB", alpha=0.35, label="Underweight (< 18.5)")
-    ax.axhspan(18.5, 24.9, color="#C8E6C9", alpha=0.35, label="Normal (18.5 – 24.9)")
-    ax.axhspan(25.0, 29.9, color="#FFE0B2", alpha=0.35, label="Overweight (25 – 29.9)")
-    ax.axhspan(30.0, 100, color="#FFCDD2", alpha=0.35, label="Obese (≥ 30)")
-
-    # Date formatting on X-axis
-    span_days = (dates[-1] - dates[0]).total_seconds() / 86400.0
-    if span_days < 2.0:
-        ax.xaxis.set_major_formatter(mdates.DateFormatter("%d-%b %H:%M"))
+    # Format X-axis timestamps so they are readable and do not overlap
+    span_seconds = (dates[-1] - dates[0]).total_seconds()
+    if span_seconds <= 3600:
+        # Closely spaced records within 1 hour: include seconds to distinguish timestamps
+        date_fmt = "%d-%b %H:%M:%S"
+    elif span_seconds <= 86400 * 2:
+        # Records within 2 days: include date and hour:minute
+        date_fmt = "%d-%b %H:%M"
     else:
-        ax.xaxis.set_major_formatter(mdates.DateFormatter("%d %b %Y"))
-    fig.autofmt_xdate(rotation=25)
+        # Records over multiple days: show full date
+        date_fmt = "%d %b %Y"
 
-    # Exact required labels and title
+    ax.xaxis.set_major_formatter(mdates.DateFormatter(date_fmt))
+    locator = mdates.AutoDateLocator(minticks=2, maxticks=6)
+    ax.xaxis.set_major_locator(locator)
+
+    ax.margins(x=0.08)
+    fig.autofmt_xdate(rotation=22, ha="right")
+
+    # Titles and labels exactly matching requirements
     ax.set_title(f"BMI Trend for {user_name}", fontsize=13, fontweight="bold", pad=12)
     ax.set_xlabel("Date", fontsize=10, fontweight="bold", labelpad=8)
     ax.set_ylabel("BMI", fontsize=10, fontweight="bold", labelpad=8)

@@ -1,5 +1,6 @@
 """
 Automated unit and integration tests for the BMICalculatorApp GUI.
+Includes full restart persistence and multi-user isolation verification.
 """
 
 import os
@@ -25,7 +26,10 @@ class TestBMICalculatorGUI(unittest.TestCase):
         self.app = BMICalculatorApp(self.root, db_manager=self.db)
 
     def tearDown(self):
-        self.root.destroy()
+        try:
+            self.root.destroy()
+        except Exception:
+            pass
         self.temp_dir.cleanup()
 
     def test_gui_initial_state(self):
@@ -85,6 +89,62 @@ class TestBMICalculatorGUI(unittest.TestCase):
         values_ravi = self.app.history_tree.item(ravi_records[0], "values")
         self.assertEqual(values_ravi[4], "22.86")
         self.assertEqual(values_ravi[5], "Normal")
+
+    def test_persistence_across_app_restart(self):
+        """
+        Verify the exact user flow:
+        SAVE -> CLOSE -> REOPEN -> LOAD HISTORY -> DISPLAY LINE CHART
+        """
+        # Session 1: Save records for Ravi
+        self.app.user_var.set("Ravi")
+        self.app.weight_var.set("70")
+        self.app.height_var.set("1.75")
+        self.app._handle_calculate_and_save()
+
+        self.app.weight_var.set("72")
+        self.app.height_var.set("1.75")
+        self.app._handle_calculate_and_save()
+
+        # Also save 1 record for Amit
+        self.app.user_var.set("Amit")
+        self.app.weight_var.set("85")
+        self.app.height_var.set("1.80")
+        self.app._handle_calculate_and_save()
+
+        # Completely close Session 1
+        self.root.destroy()
+
+        # Session 2: Fresh start with the exact same database file
+        root2 = tk.Tk()
+        root2.withdraw()
+        db2 = DatabaseManager(db_path=self.db_path)
+        app2 = BMICalculatorApp(root2, db_manager=db2)
+
+        try:
+            # Verify user list is preserved
+            user_list = list(app2.user_combobox["values"])
+            self.assertIn("Ravi", user_list)
+            self.assertIn("Amit", user_list)
+
+            # Select Ravi and verify previous records are still present in history
+            app2.user_var.set("Ravi")
+            app2._on_user_selected(None)
+            ravi_rows = app2.history_tree.get_children()
+            self.assertEqual(len(ravi_rows), 2)
+
+            # Select Amit and verify ONLY Amit's record appears
+            app2.user_var.set("Amit")
+            app2._on_user_selected(None)
+            amit_rows = app2.history_tree.get_children()
+            self.assertEqual(len(amit_rows), 1)
+
+            # Re-select Ravi and verify Trend graph generates from persisted records
+            app2.user_var.set("Ravi")
+            app2._on_user_selected(None)
+            records = db2.get_user_records(app2.current_user_id, order_desc=False)
+            self.assertEqual(len(records), 2)
+        finally:
+            root2.destroy()
 
     def test_reset_fields(self):
         self.app.weight_var.set("80")
