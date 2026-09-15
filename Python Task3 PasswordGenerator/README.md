@@ -9,41 +9,23 @@ An independently designed, cryptographically secure Desktop Password Generator b
 
 ---
 
-## Table of Contents
-
-1. [Project Overview](#1-project-overview)
-2. [Objective](#2-objective)
-3. [Beginner Features](#3-beginner-features)
-4. [Advanced Features](#4-advanced-features)
-5. [Technology Stack](#5-technology-stack)
-6. [Why `secrets` is Used Instead of `random`](#6-why-secrets-is-used-instead-of-random)
-7. [Password Generation Approach](#7-password-generation-approach)
-8. [Character Type Guarantee](#8-character-type-guarantee)
-9. [Password Strength Logic](#9-password-strength-logic)
-10. [Ambiguous Character Exclusion](#10-ambiguous-character-exclusion)
-11. [Clipboard Functionality & Fallback](#11-clipboard-functionality--fallback)
-12. [Generation History Behavior & Privacy Decisions](#12-generation-history-behavior--privacy-decisions)
-13. [Security Considerations](#13-security-considerations)
-14. [Privacy Considerations](#14-privacy-considerations)
-15. [Project Structure](#15-project-structure)
-16. [Installation](#16-installation)
-17. [System Requirements](#17-system-requirements)
-18. [How to Run](#18-how-to-run)
-19. [How to Use](#19-how-to-use)
-20. [Validation Rules](#20-validation-rules)
-21. [Automated and Manual Testing](#21-automated-and-manual-testing)
-22. [GUI Design & Visual Layout](#22-gui-design--visual-layout)
-23. [Known Limitations](#23-known-limitations)
-24. [Future Improvements](#24-future-improvements)
-25. [OIBSIP Evaluation Verification Matrix](#25-oibsip-evaluation-verification-matrix)
-
----
-
-## 1. Project Overview
+## Project Overview
 
 The **Advanced Random Password Generator** is a graphical desktop application engineered to generate cryptographically resilient passwords configured to user specifications. It is designed from first principles with zero external code imitation, strictly conforming to modern cryptographic standards and safe software engineering practices.
 
-## 2. Objective
+## Screenshots
+
+<div align="center">
+
+### ☀️ Golden Light Theme (Default)
+![Golden Light Theme](assets/screenshot_light.png)
+
+### 🌙 Obsidian Gold Dark Theme
+![Obsidian Gold Dark Theme](assets/screenshot_dark.png)
+
+</div>
+
+## Objective
 
 The primary objective of this project is to deliver a password generation tool that:
 - Allows fine-grained user control over length, diversity, and character exclusion.
@@ -55,7 +37,7 @@ The primary objective of this project is to deliver a password generation tool t
 
 ---
 
-## 3. Beginner Features
+## Beginner Features
 
 All fundamental internship specifications are implemented:
 - **Length Specification**: Configurable password length with strict validation (minimum length of 8).
@@ -67,7 +49,7 @@ All fundamental internship specifications are implemented:
 
 ---
 
-## 4. Advanced Features
+## Advanced Features
 
 Every advanced internship specification is implemented:
 - **Tkinter GUI**: Modern slate-themed user interface with clean component grouping.
@@ -84,7 +66,7 @@ Every advanced internship specification is implemented:
 
 ---
 
-## 5. Technology Stack
+## Technology Stack
 
 - **Python 3.8+**: Core programming language.
 - **`secrets` (Standard Library)**: Cryptographically secure pseudo-random number generator (CSPRNG) utilizing OS entropy sources (`CryptGenRandom` on Windows, `/dev/urandom` / `getrandom()` on Linux/macOS).
@@ -96,7 +78,7 @@ Every advanced internship specification is implemented:
 
 ---
 
-## 6. Why `secrets` is Used Instead of `random`
+## Why `secrets` is Used Instead of `random`
 
 Python's built-in `random` module uses the **Mersenne Twister (MT19937)** algorithm.
 - **The Problem with `random`**: The Mersenne Twister is a deterministic PRNG designed for modeling, scientific simulations, and games. It is **not** cryptographically secure. By observing just 624 consecutive 32-bit outputs of `random`, an adversary can reconstruct the internal state matrix and accurately predict every past and future generated password.
@@ -107,7 +89,7 @@ Python's built-in `random` module uses the **Mersenne Twister (MT19937)** algori
 
 ---
 
-## 7. Password Generation Approach
+## Password Generation Approach
 
 1. **Parameter Validation**: Validate length ($8 \le L \le 128$) and ensure $\ge 2$ character categories are selected.
 2. **Pool Construction & Ambiguous Filtering**: Assemble active pools (Uppercase, Lowercase, Digits, Symbols). If ambiguous character filtering is enabled, visually confusing characters are stripped from active pools while verifying that no pool is left empty.
@@ -124,7 +106,7 @@ Step 3 (CSPRNG Fisher-Yates): ['9', 'X', 'm', '$', '2', 'K', '!', 'p', '8', 'R',
 
 ---
 
-## 8. Character Type Guarantee
+## Character Type Guarantee
 
 Standard naive generators select all characters randomly from a single combined pool. While the probability of missing an entire category decreases as length increases, short passwords generated this way frequently fail to contain all selected types.
 
@@ -135,7 +117,7 @@ This application **explicitly guarantees** representation:
 
 ---
 
-## 9. Password Strength Logic
+## Password Strength Logic
 
 Password strength is calculated using a multi-factor scoring model that balances **length**, **character diversity**, and **Shannon pool entropy**:
 
@@ -167,7 +149,7 @@ Password strength is calculated using a multi-factor scoring model that balances
 
 ---
 
-## 10. Ambiguous Character Exclusion
+## Ambiguous Character Exclusion
 
 When the user checks **"Exclude ambiguous characters"**, the following glyphs are filtered out from all pools:
 - `0` (Digit zero), `O` (Uppercase O), `o` (Lowercase o)
@@ -178,7 +160,7 @@ This prevents transcription errors when passwords must be entered manually on mo
 
 ---
 
-## 11. Clipboard Functionality & Fallback
+## Clipboard Functionality & Fallback
 
 - **Automatic Copy**: Upon clicking **Generate Password**, the newly created password is automatically copied to the system clipboard.
 - **Manual Copy**: A dedicated **"Copy"** button allows re-copying at any time.
@@ -189,7 +171,7 @@ This prevents transcription errors when passwords must be entered manually on mo
 
 ---
 
-## 12. Generation History Behavior & Privacy Decisions
+## Generation History Behavior & Privacy Decisions
 
 ### In-Memory Storage Only (RAM)
 - Recent passwords are held in an in-memory `collections.deque(maxlen=5)` object.
@@ -204,7 +186,7 @@ This prevents transcription errors when passwords must be entered manually on mo
 
 ---
 
-## 13. Security Considerations
+## Security Considerations
 
 - **No Passwords Written to Logs or Terminal**: The application avoids printing generated passwords to stdout or stderr.
 - **No Hardcoded Credentials or Seeds**: Randomness originates strictly from OS entropy.
@@ -213,14 +195,14 @@ This prevents transcription errors when passwords must be entered manually on mo
 
 ---
 
-## 14. Privacy Considerations
+## Privacy Considerations
 
 - **Clipboard Persistence Notice**: Clipboard contents are managed by the host operating system. Depending on your OS and third-party clipboard managers (e.g., Windows Clipboard History `Win + V`), copied passwords may remain stored in clipboard memory until cleared.
 - **No Telemetry**: The application makes zero network requests.
 
 ---
 
-## 15. Project Structure
+## Project Structure
 
 ```
 Python Task3 PasswordGenerator/
@@ -244,7 +226,7 @@ Python Task3 PasswordGenerator/
 
 ---
 
-## 16. Installation
+## Installation
 
 1. **Clone or Download the Repository**:
    ```bash
@@ -267,7 +249,7 @@ Python Task3 PasswordGenerator/
 
 ---
 
-## 17. System Requirements
+## System Requirements
 
 - **Operating System**: Windows 10/11, macOS, or Linux.
 - **Python**: Version 3.8 or higher.
@@ -275,7 +257,7 @@ Python Task3 PasswordGenerator/
 
 ---
 
-## 18. How to Run
+## How to Run
 
 Launch the application directly:
 
@@ -285,7 +267,7 @@ python src/main.py
 
 ---
 
-## 19. How to Use
+## How to Use
 
 1. **Adjust Length**: Drag the slider or use the spinbox to choose a password length ($8 - 64$ via slider, up to $128$ via spinbox).
 2. **Select Character Types**: Check the desired boxes (minimum 2).
@@ -302,7 +284,7 @@ python src/main.py
 
 ---
 
-## 20. Validation Rules
+## Validation Rules
 
 | Rule | Requirement | Error Feedback |
 | :--- | :--- | :--- |
@@ -314,7 +296,7 @@ python src/main.py
 
 ---
 
-## 21. Automated and Manual Testing
+## Automated and Manual Testing
 
 ### Automated Test Suite
 Run the full automated test suite containing 23 test cases:
@@ -351,48 +333,20 @@ python -m unittest discover tests
 
 ---
 
-## 22. GUI Design & Visual Layout
-
-The graphical interface is built with a clean, responsive two-column layout supporting both **Golden Light Theme** (default) and **Obsidian Gold Dark Theme** with an instant 1-click theme switcher:
-
-```
-┌──────────────────────────────────────────────────────────────────────────────────┐
-│                   Random Password Generator        [ 🌙 Dark Theme ] / [☀️ Light] │
-│                  Cryptographically secure via Python secrets                     │
-├────────────────────────────────────────┬─────────────────────────────────────────┤
-│ PASSWORD CONFIGURATION                 │ GENERATED PASSWORD                      │
-│                                        │                                         │
-│ Password Length:                [ 16 ] │ ┌─────────────────────────────┐ ┌─────┐ │
-│ ────●─────────────────────────── [ 16 ] │ │ K9#mQ2!vL7$zW1*x            │ │Copy │ │
-│                                        │ └─────────────────────────────┘ └─────┘ │
-│ Character Types                        │                                         │
-│ (minimum 2 required)                   │ Strength: Strong     ~95.2 bits entropy │
-│ ☑ Uppercase (A-Z)   ☑ Lowercase (a-z)  │ [█████████████████████████████████████] │
-│ ☑ Numbers (0-9)     ☑ Symbols (!@#$%)  │ ✓ Generated and copied to clipboard!    │
-│                                        │                                         │
-│ ☑ Exclude ambiguous characters         │ Session History (Last 5 - RAM) [👁Unmask]│
-│                                        │ 1. ••••••••••••••••              [Copy] │
-│                                        │ 2. ••••••••••••••••              [Copy] │
-│      [ ⚡ GENERATE PASSWORD ]          │ 3. ••••••••••••••••              [Copy] │
-├────────────────────────────────────────┴─────────────────────────────────────────┤
-│ [↺ Reset Defaults]    [Clear History]                                   [Exit]   │
-└──────────────────────────────────────────────────────────────────────────────────┘
-```
-
 - **Golden Light Theme (Default)**: Soft warm ivory background (`#f8f6f0`), crisp white cards (`#ffffff`), warm champagne inputs (`#fdf8ee`), deep golden-amber buttons (`#d97706`), and dark stone-charcoal typography (`#1c1917`) with rich amber monospace text (`#92400e`).
 - **Obsidian Gold Dark Theme**: Deep obsidian background (`#12100b`), dark bronze cards (`#1c1810`), radiant pure gold accents (`#f59e0b`), and warm golden-cream text (`#fef9c3`).
 - **1-Click Switcher**: Located in the upper right corner of the header, allowing instantaneous live repainting without restarting the application.
 
 ---
 
-## 23. Known Limitations
+## Known Limitations
 
 1. **OS Clipboard History**: On Windows 10/11 with Clipboard History enabled (`Win + V`), copied passwords are saved in the operating system's clipboard stack until cleared by the user.
 2. **Headless Execution**: Requires an active desktop graphical environment or virtual framebuffer (`Xvfb`) to launch the GUI.
 
 ---
 
-## 24. Future Improvements
+## Future Improvements
 
 - Option to configure custom symbol sets.
 - Built-in automatic clipboard clearing timer (e.g., auto-purge clipboard after 30 seconds).
@@ -401,7 +355,7 @@ The graphical interface is built with a clean, responsive two-column layout supp
 
 ---
 
-## 25. OIBSIP Evaluation Verification Matrix
+## OIBSIP Evaluation Verification Matrix
 
 | Requirement | Implementation Status | Evidence / Location |
 | :--- | :---: | :--- |
