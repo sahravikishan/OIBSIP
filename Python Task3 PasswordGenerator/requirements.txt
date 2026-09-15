@@ -1,0 +1,4 @@
+# Python Task 3: Random Password Generator Dependencies
+# Standard libraries used (no pip install required): secrets, string, tkinter, collections, unittest
+
+pyperclip>=1.8.2
